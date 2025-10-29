@@ -85,11 +85,16 @@ export default function Dashboard() {
               >
                 Ask HiveBot
               </button>
-              {aiResponse && (
-                <div className="mt-4 text-left bg-[#1a1a1a] p-3 rounded-lg text-gray-300 text-sm">
-                  <p>{aiResponse}</p>
-                </div>
-              )}
+     {chatHistory.length > 0 && (
+  <div className="mt-4 text-left bg-[#1a1a1a] p-3 rounded-lg text-gray-300 text-sm h-56 overflow-y-auto">
+    {chatHistory.map((msg, i) => (
+      <div key={i} className={`mb-2 ${msg.role === 'assistant' ? 'text-[#FFB400]' : 'text-white'}`}>
+        <strong>{msg.role === 'assistant' ? 'HiveBot:' : 'You:'}</strong> {msg.content}
+      </div>
+    ))}
+  </div>
+)}
+
             </>
           ) : (
             <p className="text-gray-400 mb-6">

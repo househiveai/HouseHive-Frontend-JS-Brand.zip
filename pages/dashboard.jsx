@@ -31,24 +31,31 @@ export default function Dashboard() {
 
   const [chatHistory, setChatHistory] = useState([])
 
-  const handleAI = async () => {
-    if (!aiInput.trim()) return
-    setAiResponse('Thinking...')
-    try {
-      const res = await apiChat(
-        [
-          ...chatHistory,
-          { role: 'user', content: aiInput }
-        ],
-        'You are HiveBot, a friendly AI co-host for HouseHive.ai that helps with properties, maintenance, and guests.'
-      )
-      setAiResponse(res.reply)
-      setChatHistory([...chatHistory, { role: 'user', content: aiInput }, { role: 'assistant', content: res.reply }])
-      setAiInput('')
-    } catch (e) {
-      setAiResponse('Error: ' + e.message)
-    }
+const handleAI = async () => {
+  if (!aiInput.trim()) return
+  setAiResponse('Thinking...')
+  try {
+    const res = await fetch('https://househive-backend-v3-zip.onrender.com/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: aiInput,
+        user_id: user?.email || 'guest',
+      }),
+    })
+    const data = await res.json()
+    setAiResponse(data.reply)
+    setChatHistory([...chatHistory, { role: 'user', content: aiInput }, { role: 'assistant', content: data.reply }])
+
+    // Update property/task lists if new ones were created
+    if (data.properties) setProperties(data.properties)
+    if (data.tasks) setTasks(data.tasks)
+
+    setAiInput('')
+  } catch (e) {
+    setAiResponse('Error: ' + e.message)
   }
+}
 
 
   const renderModal = () => {

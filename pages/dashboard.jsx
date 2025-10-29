@@ -6,6 +6,7 @@ export default function Dashboard() {
   const [properties, setProperties] = useState([])
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [modal, setModal] = useState(null) // track which action is open
 
   // Load user + data on mount
   useEffect(() => {
@@ -33,10 +34,68 @@ export default function Dashboard() {
       </div>
     )
 
+  // Modal content placeholders
+  const renderModal = () => {
+    if (!modal) return null
+    const close = () => setModal(null)
+
+    const titleMap = {
+      property: 'Add New Property',
+      maintenance: 'Create Maintenance Task',
+      ai: 'Ask HiveBot Assistant',
+      report: 'View Reports',
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-[#111111] rounded-2xl p-8 w-96 text-center border border-[#FFB400] shadow-lg">
+          <h2 className="text-2xl text-[#FFB400] font-bold mb-4">{titleMap[modal]}</h2>
+          <p className="text-gray-400 mb-6">
+            This feature will connect to your AI or backend workflow soon.
+          </p>
+          <button
+            className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold hover:opacity-80 transition"
+            onClick={close}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white p-8 flex flex-col items-center">
+    <div className="min-h-screen bg-black text-white p-8 flex flex-col items-center relative">
+      {/* Floating Quick Actions Bar */}
+      <div className="fixed top-6 right-6 bg-[#111111] border border-[#2a2a2a] rounded-2xl p-4 shadow-lg flex flex-col gap-3 z-40">
+        <button
+          onClick={() => setModal('property')}
+          className="bg-[#FFB400] text-black font-semibold rounded-xl px-4 py-2 hover:opacity-80 transition"
+        >
+          ➕ Add Property
+        </button>
+        <button
+          onClick={() => setModal('maintenance')}
+          className="bg-[#FFB400] text-black font-semibold rounded-xl px-4 py-2 hover:opacity-80 transition"
+        >
+          🧰 New Task
+        </button>
+        <button
+          onClick={() => setModal('ai')}
+          className="bg-[#FFB400] text-black font-semibold rounded-xl px-4 py-2 hover:opacity-80 transition"
+        >
+          🤖 Ask HiveBot
+        </button>
+        <button
+          onClick={() => setModal('report')}
+          className="bg-transparent text-[#FFB400] border border-[#FFB400] font-semibold rounded-xl px-4 py-2 hover:bg-[#FFB400] hover:text-black transition"
+        >
+          📊 Reports
+        </button>
+      </div>
+
       {/* Header */}
-      <h1 className="text-4xl font-bold text-[#FFB400] mb-6">
+      <h1 className="text-4xl font-bold text-[#FFB400] mb-2 mt-4">
         🏠 Welcome Back, {user?.name || 'User'}
       </h1>
       <p className="text-gray-400 mb-8 text-center">
@@ -110,6 +169,9 @@ export default function Dashboard() {
       <footer className="mt-12 text-gray-500 text-sm">
         © {new Date().getFullYear()} HouseHive.ai
       </footer>
+
+      {/* Modals */}
+      {renderModal()}
     </div>
   )
 }

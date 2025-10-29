@@ -29,21 +29,27 @@ export default function Dashboard() {
     loadData()
   }, [])
 
+  const [chatHistory, setChatHistory] = useState([])
+
   const handleAI = async () => {
     if (!aiInput.trim()) return
     setAiResponse('Thinking...')
     try {
       const res = await apiChat(
         [
+          ...chatHistory,
           { role: 'user', content: aiInput }
         ],
-        'You are HiveBot, an AI property co-host that manages rentals, maintenance, and guests.'
+        'You are HiveBot, a friendly AI co-host for HouseHive.ai that helps with properties, maintenance, and guests.'
       )
       setAiResponse(res.reply)
+      setChatHistory([...chatHistory, { role: 'user', content: aiInput }, { role: 'assistant', content: res.reply }])
+      setAiInput('')
     } catch (e) {
       setAiResponse('Error: ' + e.message)
     }
   }
+
 
   const renderModal = () => {
     if (!modal) return null

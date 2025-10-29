@@ -1,68 +1,114 @@
+import { useState, useEffect } from 'react'
+import { apiCreateCheckout, apiBillingPortal, apiMe } from '../lib/api'
 
-import { useState } from 'react'
-import { apiCreateCheckout, apiBillingPortal } from '../lib/api'
-
-export default function Billing(){
+export default function Billing() {
   const [status, setStatus] = useState('')
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // 🔹 Load user info (current plan)
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await apiMe()
+        setUser(res)
+      } catch (e) {
+        console.error(e)
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  // 🔹 Checkout
   const go = async (plan) => {
-    try{ const { url } = await apiCreateCheckout(plan); window.location.href = url }
-    catch(e){ setStatus(e.message) }
+    try {
+      setStatus('Redirecting to Stripe...')
+      const data = await apiCreateCheckout(plan)
+      window.location.href = data.url
+    } catch (e) {
+      setStatus('Failed to fetch: ' + e.message)
+    }
   }
+
+  // 🔹 Billing Portal
   const portal = async () => {
-    try{ const res = await apiBillingPortal(); window.location.href = res.url }
-    catch(e){ setStatus(e.message) }
+    try {
+      setStatus('Opening billing portal...')
+      const res = await apiBillingPortal()
+      window.location.href = res.url
+    } catch (e) {
+      setStatus('Failed to open portal: ' + e.message)
+    }
   }
+
   return (
-    <div className="col">
-      <div className="card">
-        <h2 className="h1">Choose a Plan</h2>
-        <div className="row">
-          <button className="btn primary" onClick={()=>go('cohost')}>Co-Host</button>
-          <button className="btn primary" onClick={()=>go('pro')}>Pro</button>
-          <button className="btn primary" onClick={()=>go('agency')}>Agency</button>
-          <button className="btn" onClick={portal}>Manage Subscription</button>
-        </div>
-        {!!status && <p style={{color:'#ffd46b'}}>{status}</p>}
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start p-8">
+      {/* Header */}
+      <h1 className="text-4xl font-bold text-[#FFB400] mb-6">Billing & Subscription</h1>
+
+      {/* Summary Card */}
+      <div className="w-full max-w-lg bg-[#111111] rounded-2xl p-6 mb-8 shadow-lg border border-[#2a2a2a]">
+        <h2 className="text-2xl font-semibold text-[#FFB400] mb-2">Subscription Summary</h2>
+        {loading ? (
+          <p className="text-gray-400">Loading...</p>
+        ) : user ? (
+          <>
+            <p className="text-lg">
+              <span className="font-semibold text-white">{user.name}</span> <br />
+              Plan: <span className="text-[#FFB400] font-medium">{user.plan}</span>
+            </p>
+            <p className="text-gray-400 mt-2 text-sm">
+              Role: {user.role} • Email: {user.email}
+            </p>
+          </>
+        ) : (
+          <p className="text-red-400">Unable to load user info.</p>
+        )}
       </div>
-    </div>
-  )
-}
-import Link from 'next/link'
 
-export default function Success() {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white text-center">
-      <h1 className="text-4xl font-bold text-[#FFB400] mb-4">
-        🎉 Payment Successful!
-      </h1>
-      <p className="text-lg text-gray-300 mb-8">
-        Thank you for subscribing to <span className="text-[#FFB400] font-semibold">HouseHive Premium</span>.
-        <br /> Your account is now upgraded and ready to go!
-      </p>
-      <Link href="/dashboard">
-        <button className="bg-[#FFB400] text-black px-6 py-3 rounded-xl font-semibold hover:opacity-80 transition">
-          Go to Dashboard
-        </button>
-      </Link>
-    </div>
-  )
-}
-import Link from 'next/link'
+      {/* Plan Buttons */}
+      <div className="w-full max-w-lg bg-[#111111] rounded-2xl p-6 shadow-lg border border-[#2a2a2a]">
+        <h2 className="text-2xl font-semibold mb-4 text-[#FFB400]">Choose a Plan</h2>
+        <div className="flex flex-wrap justify-center gap-4 mb-6">
+          <button
+            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
+            onClick={() => go('cohost')}
+          >
+            Co-Host
+          </button>
+          <button
+            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
+            onClick={() => go('pro')}
+          >
+            Pro
+          </button>
+          <button
+            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
+            onClick={() => go('agency')}
+          >
+            Agency
+          </button>
+        </div>
 
-export default function Cancel() {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white text-center">
-      <h1 className="text-4xl font-bold text-red-500 mb-4">
-        ⚠️ Payment Canceled
-      </h1>
-      <p className="text-lg text-gray-300 mb-8">
-        Your checkout was canceled. Don’t worry — you can try again anytime.
-      </p>
-      <Link href="/billing">
-        <button className="bg-[#FFB400] text-black px-6 py-3 rounded-xl font-semibold hover:opacity-80 transition">
-          Back to Billing
+        <button
+          className="bg-transparent border border-[#FFB400] text-[#FFB400] px-5 py-3 rounded-xl font-semibold hover:bg-[#FFB400] hover:text-black transition"
+          onClick={portal}
+        >
+          Manage Subscription
         </button>
-      </Link>
+
+        {status && (
+          <p className="mt-4 text-gray-300 text-center text-sm">{status}</p>
+        )}
+      </div>
+
+      <footer className="mt-12 text-gray-500 text-sm">
+        © {new Date().getFullYear()} HouseHive.ai
+      </footer>
     </div>
   )
 }
+

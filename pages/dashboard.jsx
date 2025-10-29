@@ -1,23 +1,25 @@
 import { useEffect, useState } from 'react'
-import { apiGetProperties, apiGetTasks, apiMe } from '../lib/api'
+import { apiGetProperties, apiGetTasks, apiMe, apiChat } from '../lib/api'
 
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [properties, setProperties] = useState([])
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null) // track which action is open
+  const [modal, setModal] = useState(null)
+  const [aiInput, setAiInput] = useState('')
+  const [aiResponse, setAiResponse] = useState('')
 
-  // Load user + data on mount
+  // Load user + data
   useEffect(() => {
     const loadData = async () => {
       try {
-        const userRes = await apiMe()
-        const propRes = await apiGetProperties()
-        const taskRes = await apiGetTasks()
-        setUser(userRes)
-        setProperties(propRes)
-        setTasks(taskRes)
+        const u = await apiMe()
+        const p = await apiGetProperties()
+        const t = await apiGetTasks()
+        setUser(u)
+        setProperties(p)
+        setTasks(t)
       } catch (e) {
         console.error(e)
       } finally {
@@ -27,17 +29,29 @@ export default function Dashboard() {
     loadData()
   }, [])
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-[#FFB400] text-2xl">
-        Loading your dashboard...
-      </div>
-    )
+  const handleAI = async () => {
+    if (!aiInput.trim()) return
+    setAiResponse('Thinking...')
+    try {
+      const res = await apiChat(
+        [
+          { role: 'user', content: aiInput }
+        ],
+        'You are HiveBot, an AI property co-host that manages rentals, maintenance, and guests.'
+      )
+      setAiResponse(res.reply)
+    } catch (e) {
+      setAiResponse('Error: ' + e.message)
+    }
+  }
 
-  // Modal content placeholders
   const renderModal = () => {
     if (!modal) return null
-    const close = () => setModal(null)
+    const close = () => {
+      setModal(null)
+      setAiInput('')
+      setAiResponse('')
+    }
 
     const titleMap = {
       property: 'Add New Property',
@@ -48,13 +62,37 @@ export default function Dashboard() {
 
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-[#111111] rounded-2xl p-8 w-96 text-center border border-[#FFB400] shadow-lg">
+        <div className="bg-[#111111] rounded-2xl p-8 w-[28rem] text-center border border-[#FFB400] shadow-lg">
           <h2 className="text-2xl text-[#FFB400] font-bold mb-4">{titleMap[modal]}</h2>
-          <p className="text-gray-400 mb-6">
-            This feature will connect to your AI or backend workflow soon.
-          </p>
+
+          {modal === 'ai' ? (
+            <>
+              <textarea
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                placeholder="Ask HiveBot a question or give a task..."
+                className="w-full h-32 p-3 rounded-lg bg-black text-white border border-[#2a2a2a] mb-4 focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
+              />
+              <button
+                className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold hover:opacity-80 transition"
+                onClick={handleAI}
+              >
+                Ask HiveBot
+              </button>
+              {aiResponse && (
+                <div className="mt-4 text-left bg-[#1a1a1a] p-3 rounded-lg text-gray-300 text-sm">
+                  <p>{aiResponse}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-400 mb-6">
+              This feature will connect to AI automation soon.
+            </p>
+          )}
+
           <button
-            className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold hover:opacity-80 transition"
+            className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold mt-6 hover:opacity-80 transition"
             onClick={close}
           >
             Close
@@ -63,6 +101,13 @@ export default function Dashboard() {
       </div>
     )
   }
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-[#FFB400] text-2xl">
+        Loading your dashboard...
+      </div>
+    )
 
   return (
     <div className="min-h-screen bg-black text-white p-8 flex flex-col items-center relative">
@@ -116,9 +161,6 @@ export default function Dashboard() {
               >
                 <h3 className="text-xl font-semibold text-[#FFB400] mb-1">{p.name}</h3>
                 <p className="text-gray-400 text-sm">{p.address}</p>
-                {p.rent && (
-                  <p className="text-gray-300 mt-2 text-sm">Rent: ${p.rent}</p>
-                )}
               </div>
             ))}
           </div>
@@ -165,13 +207,12 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Footer */}
       <footer className="mt-12 text-gray-500 text-sm">
         © {new Date().getFullYear()} HouseHive.ai
       </footer>
 
-      {/* Modals */}
       {renderModal()}
     </div>
   )
 }
+

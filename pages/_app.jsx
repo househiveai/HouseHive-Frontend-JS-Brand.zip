@@ -21,7 +21,7 @@ export default function App({ Component, pageProps }){
             <Link href="/messages">Messages</Link>
            <a href="/billing">Billing</a>
 
-            <a href="/">Logout</a>
+            <a href="/register">Logout</a>
           </nav>
         </div>
       </header>

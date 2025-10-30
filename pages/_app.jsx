@@ -19,7 +19,8 @@ export default function App({ Component, pageProps }){
             <Link href="/properties">Properties</Link>
             <Link href="/tasks">Maintenance</Link>
             <Link href="/messages">Messages</Link>
-            <Link href="/billing">Billing</Link>
+           <a href="/billing">Billing</a>
+
             <a href="/">Logout</a>
           </nav>
         </div>

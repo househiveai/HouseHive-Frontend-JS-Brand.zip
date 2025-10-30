@@ -1,8 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Billing() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [user, setUser] = useState<any>(null);
+
+  // ✅ Load user info on page load
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage("You must be logged in.");
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.email) {
+          setUser(data);
+        } else {
+          setMessage("Unable to load user info.");
+        }
+      })
+      .catch(() => setMessage("Unable to load user info."));
+  }, []);
 
   const startCheckout = async (plan: string) => {
     setLoading(true);
@@ -56,23 +81,30 @@ export default function Billing() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center pt-20">
       <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-        HouseHive.ai Billing
+        Billing & Subscription
       </h1>
-      <p className="text-zinc-400 mb-8 text-center max-w-lg">
-        Upgrade to unlock powerful features — AI-driven co-hosting, automated
-        maintenance, guest messaging, and more.
-      </p>
+
+      {user ? (
+        <>
+          <p className="text-zinc-400 mb-6">
+            Logged in as: <span className="text-yellow-400">{user.email}</span>
+          </p>
+          <p className="text-zinc-400 mb-8">
+            Current Plan:{" "}
+            <span className="text-yellow-400 font-semibold">{user.plan}</span>
+          </p>
+        </>
+      ) : (
+        <p className="text-red-400 mb-8">
+          {message || "Unable to load user info."}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl">
         {/* Cohost Plan */}
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Cohost</h2>
           <p className="text-zinc-400 mb-4">$19.99 / month</p>
-          <ul className="text-left text-sm mb-6">
-            <li>✓ Manage 3 properties</li>
-            <li>✓ AI Guest Messaging</li>
-            <li>✓ Task Automation</li>
-          </ul>
           <button
             onClick={() => startCheckout("cohost")}
             disabled={loading}
@@ -86,11 +118,6 @@ export default function Billing() {
         <div className="bg-zinc-900 p-6 rounded-2xl border border-yellow-500 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Pro</h2>
           <p className="text-zinc-400 mb-4">$29.99 / month</p>
-          <ul className="text-left text-sm mb-6">
-            <li>✓ Manage 10 properties</li>
-            <li>✓ Advanced AI Reports</li>
-            <li>✓ Vendor Scheduling</li>
-          </ul>
           <button
             onClick={() => startCheckout("pro")}
             disabled={loading}
@@ -104,11 +131,6 @@ export default function Billing() {
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Agency</h2>
           <p className="text-zinc-400 mb-4">$99.99 / month</p>
-          <ul className="text-left text-sm mb-6">
-            <li>✓ Unlimited Properties</li>
-            <li>✓ Full White-Label Branding</li>
-            <li>✓ Dedicated Support</li>
-          </ul>
           <button
             onClick={() => startCheckout("agency")}
             disabled={loading}
@@ -125,7 +147,7 @@ export default function Billing() {
           disabled={loading}
           className="border border-yellow-400 text-yellow-400 py-2 px-6 rounded hover:bg-yellow-400 hover:text-black transition"
         >
-          Open Billing Portal
+          Manage Subscription
         </button>
       </div>
 
@@ -133,3 +155,4 @@ export default function Billing() {
     </div>
   );
 }
+

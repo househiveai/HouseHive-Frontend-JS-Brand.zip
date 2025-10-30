@@ -1,57 +1,46 @@
-export default function Home() {
+
+import { useState } from 'react'
+import { apiLogin, apiRegister } from '../lib/api'
+
+export default function Home(){
+  const [email, setEmail] = useState('demo@househive.ai')
+  const [password, setPassword] = useState('demo1234')
+  const [name, setName] = useState('Demo User')
+  const [mode, setMode] = useState('login')
+  const [msg, setMsg] = useState('')
+  const submit = async () => {
+    try {
+      if (mode === 'register') {
+        await apiRegister({email, password, name}); setMsg('Registered! Now log in.'); setMode('login'); return
+      }
+      await apiLogin(email, password); window.location.href='/dashboard'
+    } catch(e){ setMsg(e.message || 'Error') }
+  }
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 py-20">
-      <h1 className="text-4xl md:text-6xl font-bold text-[#FFB400] mb-6 text-center">
-        Welcome to HouseHive.ai
-      </h1>
-
-      <p className="text-gray-300 text-lg text-center max-w-2xl mb-10">
-        Your AI-powered property assistant — manage rentals, guests, and
-        maintenance with ease.
-      </p>
-
-      <div className="flex flex-wrap gap-4 justify-center">
-        <a
-          href="/register"
-          className="bg-[#FFB400] text-black font-bold py-3 px-6 rounded-xl hover:bg-yellow-300 transition"
-        >
-          Get Started
-        </a>
-
-        <button
-          onClick={async () => {
-            try {
-              const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/login`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    email: "demo@househive.ai",
-                    password: "demo123",
-                  }),
-                }
-              );
-              const data = await res.json();
-              if (data.token) {
-                localStorage.setItem("token", data.token);
-                window.location.href = "/dashboard";
-              } else {
-                alert("Demo account unavailable right now.");
-              }
-            } catch (err) {
-              alert("Error connecting to demo account.");
-            }
-          }}
-          className="bg-black text-[#FFB400] font-bold py-3 px-6 rounded-xl border border-[#FFB400] hover:bg-[#FFB400] hover:text-black transition"
-        >
-          Demo Dashboard
-        </button>
+    <>
+      <div className="hero">
+        <h1 style={{fontSize:'2rem',fontWeight:900,margin:'0 0 6px'}}>Work faster with HiveBot</h1>
+        <p style={{opacity:.85,margin:'0 0 12px'}}>Tasks, vendors, and guest messages—handled by AI with one click.</p>
+        <div className="row">
+          <button className="btn primary" onClick={()=>document.getElementById('auth')?.scrollIntoView({behavior:'smooth'})}>Get Started</button>
+          <a className="btn" href="/dashboard">Demo Dashboard</a>
+        </div>
       </div>
 
-      <footer className="mt-16 text-gray-500 text-sm">
-        © {new Date().getFullYear()} HouseHive.ai — AI-Powered Property Assistant
-      </footer>
-    </div>
-  );
+      <div id="auth" style={{height:16}}></div>
+      <div className="container" style={{marginTop:16}}>
+        <h2 className="h1">{mode==='login'?'Login to HouseHive':'Create your account'}</h2>
+        <div className="col" style={{maxWidth:520}}>
+          {mode==='register' && (<><label>Name</label><input value={name} onChange={e=>setName(e.target.value)} /></>)}
+          <label>Email</label><input value={email} onChange={e=>setEmail(e.target.value)} />
+          <label>Password</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+          <div className="row">
+            <button className="btn primary" onClick={submit}>{mode==='login'?'Login':'Create Account'}</button>
+            <button className="btn" onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Need an account?':'Already have an account?'}</button>
+          </div>
+          {!!msg && <p style={{color:'#ffd46b'}}>{msg}</p>}
+        </div>
+      </div>
+    </>
+  )
 }

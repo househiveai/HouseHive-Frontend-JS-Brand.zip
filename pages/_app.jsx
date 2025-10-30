@@ -9,10 +9,7 @@ export default function App({ Component, pageProps }){
         <div className="header-inner">
           <div className="brand">
             <img className="logo" src="/logo.svg" alt="HouseHive.ai"/>
-            <div>
-              <div className="title">HouseHive.ai</div>
-              <div className="tag">AI-Powered Property Assistant</div>
-            </div>
+            
           </div>
           <nav>
             <Link href="/dashboard">Dashboard</Link>

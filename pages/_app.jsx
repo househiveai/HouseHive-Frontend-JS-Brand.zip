@@ -8,7 +8,7 @@ export default function App({ Component, pageProps }){
       <header className="header">
         <div className="header-inner">
           <div className="brand">
-            <Link href="/"><img className="logo" src="/og-image.png" alt="HouseHive.ai"/></Link>
+            <Link href="/"><img className="logo" src="/og-image.png" alt="HouseHive.ai" class="logo"/></Link>
             
             
           </div>

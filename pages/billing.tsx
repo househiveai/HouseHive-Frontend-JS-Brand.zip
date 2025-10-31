@@ -4,6 +4,7 @@ export default function Billing() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 
   // ✅ Load user info on page load
   useEffect(() => {
@@ -29,19 +30,23 @@ export default function Billing() {
       .catch(() => setMessage("Unable to load user info."));
   }, []);
 
+  // ✅ Checkout
   const startCheckout = async (plan: string) => {
     setLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ plan }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ plan }),
+        }
+      );
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -54,18 +59,22 @@ export default function Billing() {
     setLoading(false);
   };
 
+  // ✅ Billing Portal
   const openBillingPortal = async () => {
     setLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing-portal`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/billing-portal`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -76,6 +85,42 @@ export default function Billing() {
       setMessage("Error connecting to Stripe.");
     }
     setLoading(false);
+  };
+
+  // ✅ Plan details
+  const planDetails: Record<string, any> = {
+    cohost: {
+      name: "Cohost Plan",
+      price: "$19.99 / month",
+      features: [
+        "Track up to 5 properties",
+        "Smart guest messaging",
+        "Maintenance task automation",
+      ],
+      color: "#FFB400",
+    },
+    pro: {
+      name: "Pro Plan",
+      price: "$29.99 / month",
+      features: [
+        "Unlimited properties",
+        "Full AI chat automation",
+        "Smart rent tracking",
+        "Team access for 3 users",
+      ],
+      color: "#FFD85A",
+    },
+    agency: {
+      name: "Agency Plan",
+      price: "$99.99 / month",
+      features: [
+        "Unlimited clients & properties",
+        "White-label dashboard",
+        "Priority AI support",
+        "Custom integrations",
+      ],
+      color: "#FFC300",
+    },
   };
 
   return (
@@ -100,52 +145,29 @@ export default function Billing() {
         </p>
       )}
 
-      <div className="plan-wrapper"> 
-        {/* Cohost Plan */}
-        <div className="plan">
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
-          <h2 className="text-2xl font-bold text-yellow-400 mb-2">Cohost</h2>
-          <p className="text-zinc-400 mb-4">$19.99 / month</p>
-          <button
-            onClick={() => startCheckout("cohost")}
-            disabled={loading}
-            className="w-full bg-yellow-400 text-black font-bold py-2 rounded hover:bg-yellow-300 transition"
+      {/* 🟡 Plan Boxes */}
+      <div className="plan-wrapper flex flex-wrap justify-center gap-8">
+        {Object.entries(planDetails).map(([key, plan]) => (
+          <div
+            key={key}
+            className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center w-64 hover:border-yellow-400 transition"
           >
-            Upgrade
-          </button>
-        </div>
-        </div>
-
-        {/* Pro Plan */}
-        <div className="plan">
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-yellow-500 text-center">
-          <h2 className="text-2xl font-bold text-yellow-400 mb-2">Pro</h2>
-          <p className="text-zinc-400 mb-4">$29.99 / month</p>
-          <button
-            onClick={() => startCheckout("pro")}
-            disabled={loading}
-            className="w-full bg-yellow-400 text-black font-bold py-2 rounded hover:bg-yellow-300 transition"
-          >
-            Upgrade
-          </button>
-        </div></div>
-
-        {/* Agency Plan */}
-        <div className="plan">
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
-          <h2 className="text-2xl font-bold text-yellow-400 mb-2">Agency</h2>
-          <p className="text-zinc-400 mb-4">$99.99 / month</p>
-          <button
-            onClick={() => startCheckout("agency")}
-            disabled={loading}
-            className="w-full bg-yellow-400 text-black font-bold py-2 rounded hover:bg-yellow-300 transition"
-          >
-            Upgrade
-          </button></div></div>
-     
-        
+            <h2 className="text-2xl font-bold text-yellow-400 mb-2">
+              {plan.name.split(" ")[0]}
+            </h2>
+            <p className="text-zinc-400 mb-4">{plan.price}</p>
+            <button
+              onClick={() => setSelectedPlan(key)}
+              disabled={loading}
+              className="bg-[#FFB400] text-black px-5 py-2 rounded-xl font-semibold hover:opacity-90 transition"
+            >
+              View Details
+            </button>
+          </div>
+        ))}
       </div>
 
+      {/* Manage Subscription */}
       <div className="mt-10">
         <button
           onClick={openBillingPortal}
@@ -157,7 +179,44 @@ export default function Billing() {
       </div>
 
       {message && <p className="text-red-400 mt-6">{message}</p>}
+
+      {/* 🟢 Popup Modal */}
+      {selectedPlan && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
+          <div className="bg-[#111] border border-[#333] rounded-2xl p-8 max-w-md text-center relative">
+            <button
+              onClick={() => setSelectedPlan(null)}
+              className="absolute top-3 right-4 text-gray-400 hover:text-white text-xl"
+            >
+              ✕
+            </button>
+
+            <h2
+              className="text-3xl font-bold mb-2"
+              style={{ color: planDetails[selectedPlan].color }}
+            >
+              {planDetails[selectedPlan].name}
+            </h2>
+            <p className="text-gray-400 mb-4">
+              {planDetails[selectedPlan].price}
+            </p>
+
+            <ul className="text-gray-300 text-left mb-6 list-disc list-inside">
+              {planDetails[selectedPlan].features.map((f: string) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => startCheckout(selectedPlan)}
+              disabled={loading}
+              className="bg-[#FFB400] text-black px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
+            >
+              Purchase {planDetails[selectedPlan].name.split(" ")[0]}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

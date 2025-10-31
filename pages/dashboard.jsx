@@ -135,25 +135,25 @@ const handleAI = async () => {
           onClick={() => setModal('property')}
           className="btn"
         >
-          ➕ Add Property
+          <img src='/add.svg'></img> Add Property
         </button>
         <button
           onClick={() => setModal('maintenance')}
           className="btn"
         >
-          🧰 New Task
+          <img src='/notes.svg'></img> New Task
         </button>
         <button
           onClick={() => setModal('ai')}
           className="btn"
         >
-          🤖 Ask HiveBot
+          <img src='/bot.svg'></img> Ask HiveBot
         </button>
         <button
           onClick={() => setModal('report')}
           className="btn"
         >
-          📊 Reports
+          <img src='/chart.svg'></img> Reports
         </button>
       </div>
 

@@ -124,11 +124,11 @@ export default function Billing() {
       )}
 
       {/* 🟡 Plan Boxes */}
-      <div className="plan">
+      <div className="plan-wrapper">
         {Object.entries(planDetails).map(([key, plan]) => (
           <div
             key={key}
-            className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center w-64 hover:border-yellow-400 transition"
+            className="plan"
           >
             <h2 className="text-2xl font-bold text-yellow-400 mb-2">
               {plan.name.split(" ")[0]}

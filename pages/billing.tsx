@@ -100,8 +100,9 @@ export default function Billing() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl">
+      <div className="plan-wrapper"> <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl">
         {/* Cohost Plan */}
+        <div className="plan">
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Cohost</h2>
           <p className="text-zinc-400 mb-4">$19.99 / month</p>
@@ -113,8 +114,10 @@ export default function Billing() {
             Upgrade
           </button>
         </div>
+        </div>
 
         {/* Pro Plan */}
+        <div className="plan">
         <div className="bg-zinc-900 p-6 rounded-2xl border border-yellow-500 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Pro</h2>
           <p className="text-zinc-400 mb-4">$29.99 / month</p>
@@ -125,9 +128,10 @@ export default function Billing() {
           >
             Upgrade
           </button>
-        </div>
+        </div></div>
 
         {/* Agency Plan */}
+        <div className="plan">
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
           <h2 className="text-2xl font-bold text-yellow-400 mb-2">Agency</h2>
           <p className="text-zinc-400 mb-4">$99.99 / month</p>
@@ -137,7 +141,8 @@ export default function Billing() {
             className="w-full bg-yellow-400 text-black font-bold py-2 rounded hover:bg-yellow-300 transition"
           >
             Upgrade
-          </button>
+          </button></div></div>
+     
         </div>
       </div>
 

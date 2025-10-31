@@ -4,8 +4,8 @@ import Link from 'next/link'
 
 export default function App({ Component, pageProps }){
   return (
-    <>
-    <head><link rel="icon" type="image/x-icon" href="/favicon.ico"></link>
+    <><head>    <link rel="icon" type="image/x-icon" href="/favicon.ico"></link>
+</head>
       <header className="header">
         <div className="header-inner">
           <div className="brand">
@@ -26,7 +26,7 @@ export default function App({ Component, pageProps }){
       </header>
       <main><Component {...pageProps}/></main>
       <div className="footer">© {new Date().getFullYear()} HouseHive.ai</div>
-      </head>
+      
     </>
   )
 }

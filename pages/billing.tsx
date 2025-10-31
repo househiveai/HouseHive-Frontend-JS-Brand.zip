@@ -100,7 +100,7 @@ export default function Billing() {
         </p>
       )}
 
-      <div className="plan-wrapper"> <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl">
+      <div className="plan-wrapper"> 
         {/* Cohost Plan */}
         <div className="plan">
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-700 text-center">
@@ -143,7 +143,7 @@ export default function Billing() {
             Upgrade
           </button></div></div>
      
-        </div>
+        
       </div>
 
       <div className="mt-10">

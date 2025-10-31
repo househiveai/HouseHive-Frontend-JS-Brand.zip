@@ -15,73 +15,53 @@ export default function Billing() {
     }
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => {
-        if (data.email) {
-          setUser(data);
-        } else {
-          setMessage("Unable to load user info.");
-        }
-      })
+      .then((data) => (data.email ? setUser(data) : setMessage("Unable to load user info.")))
       .catch(() => setMessage("Unable to load user info."));
   }, []);
 
-  // ✅ Checkout
+  // ✅ Stripe checkout
   const startCheckout = async (plan: string) => {
     setLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ plan }),
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setMessage("Could not start checkout. Please try again.");
-      }
-    } catch (err) {
+      if (data.url) window.location.href = data.url;
+      else setMessage("Could not start checkout. Please try again.");
+    } catch {
       setMessage("Error connecting to Stripe.");
     }
     setLoading(false);
   };
 
-  // ✅ Billing Portal
+  // ✅ Billing portal
   const openBillingPortal = async () => {
     setLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/billing-portal`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing-portal`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setMessage("Could not open billing portal.");
-      }
-    } catch (err) {
+      if (data.url) window.location.href = data.url;
+      else setMessage("Could not open billing portal.");
+    } catch {
       setMessage("Error connecting to Stripe.");
     }
     setLoading(false);
@@ -93,8 +73,8 @@ export default function Billing() {
       name: "Cohost Plan",
       price: "$19.99 / month",
       features: [
-        "Track up to 5 properties",
-        "Smart guest messaging",
+        "Manage up to 5 properties",
+        "Smart guest messaging & alerts",
         "Maintenance task automation",
       ],
       color: "#FFB400",
@@ -104,9 +84,9 @@ export default function Billing() {
       price: "$29.99 / month",
       features: [
         "Unlimited properties",
-        "Full AI chat automation",
+        "AI co-host automation",
         "Smart rent tracking",
-        "Team access for 3 users",
+        "Team access (3 users)",
       ],
       color: "#FFD85A",
     },
@@ -117,7 +97,7 @@ export default function Billing() {
         "Unlimited clients & properties",
         "White-label dashboard",
         "Priority AI support",
-        "Custom integrations",
+        "Custom automation flows",
       ],
       color: "#FFC300",
     },
@@ -140,13 +120,11 @@ export default function Billing() {
           </p>
         </>
       ) : (
-        <p className="text-red-400 mb-8">
-          {message || "Unable to load user info."}
-        </p>
+        <p className="text-red-400 mb-8">{message || "Unable to load user info."}</p>
       )}
 
       {/* 🟡 Plan Boxes */}
-      <div className="plan-wrapper flex flex-wrap justify-center gap-8">
+      <div className="plan">
         {Object.entries(planDetails).map(([key, plan]) => (
           <div
             key={key}
@@ -167,7 +145,6 @@ export default function Billing() {
         ))}
       </div>
 
-      {/* Manage Subscription */}
       <div className="mt-10">
         <button
           onClick={openBillingPortal}
@@ -180,40 +157,54 @@ export default function Billing() {
 
       {message && <p className="text-red-400 mt-6">{message}</p>}
 
-      {/* 🟢 Popup Modal */}
+      {/* 🟢 Full-Screen Popup Modal */}
       {selectedPlan && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-6">
-          <div className="bg-[#111] border border-[#333] rounded-2xl p-8 max-w-md text-center relative">
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-95 text-white p-6"
+          onClick={() => setSelectedPlan(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-[#0c0c0c] border border-[#2a2a2a] rounded-3xl p-10 shadow-2xl text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setSelectedPlan(null)}
-              className="absolute top-3 right-4 text-gray-400 hover:text-white text-xl"
+              className="absolute top-4 right-6 text-gray-400 hover:text-white text-3xl font-bold"
             >
               ✕
             </button>
 
             <h2
-              className="text-3xl font-bold mb-2"
+              className="text-4xl font-bold mb-2"
               style={{ color: planDetails[selectedPlan].color }}
             >
               {planDetails[selectedPlan].name}
             </h2>
-            <p className="text-gray-400 mb-4">
+
+            <p className="text-gray-400 text-lg mb-6">
               {planDetails[selectedPlan].price}
             </p>
 
-            <ul className="text-gray-300 text-left mb-6 list-disc list-inside">
+            <div className="border-t border-zinc-700 my-6"></div>
+
+            <ul className="text-left text-gray-300 text-lg space-y-3">
               {planDetails[selectedPlan].features.map((f: string) => (
-                <li key={f}>{f}</li>
+                <li key={f} className="flex items-start space-x-2">
+                  <span className="text-[#FFB400]">✔</span>
+                  <span>{f}</span>
+                </li>
               ))}
             </ul>
 
-            <button
-              onClick={() => startCheckout(selectedPlan)}
-              disabled={loading}
-              className="bg-[#FFB400] text-black px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
-            >
-              Purchase {planDetails[selectedPlan].name.split(" ")[0]}
-            </button>
+            <div className="mt-10">
+              <button
+                onClick={() => startCheckout(selectedPlan)}
+                disabled={loading}
+                className="bg-[#FFB400] text-black px-8 py-4 rounded-2xl text-xl font-bold hover:opacity-90 transition"
+              >
+                Purchase {planDetails[selectedPlan].name.split(" ")[0]}
+              </button>
+            </div>
           </div>
         </div>
       )}

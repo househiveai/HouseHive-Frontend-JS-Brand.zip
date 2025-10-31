@@ -17,8 +17,8 @@ export default function App({ Component, pageProps }) {
   };
 
   return (
-    <><head>    <link rel="icon" type="image/x-icon" href="/logo.png"></link>
-</head>
+    <><Head>    <link rel="icon" type="image/x-icon" href="/logo.png"></link>
+</Head>
       <header className="header">
         <div className="header-inner">
           <div className="brand">

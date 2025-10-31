@@ -133,25 +133,25 @@ const handleAI = async () => {
       <div className="fixed top-6 right-6 bg-[#111111] border border-[#2a2a2a] rounded-2xl p-4 shadow-lg flex flex-col gap-3 z-40">
         <button
           onClick={() => setModal('property')}
-          class="dash"
+          className="btn"
         >
           ➕ Add Property
         </button>
         <button
           onClick={() => setModal('maintenance')}
-          class="dash"
+          className="btn"
         >
           🧰 New Task
         </button>
         <button
           onClick={() => setModal('ai')}
-          class="dash"
+          className="btn"
         >
           🤖 Ask HiveBot
         </button>
         <button
           onClick={() => setModal('report')}
-          class="dash"
+          className="btn"
         >
           📊 Reports
         </button>

@@ -47,7 +47,16 @@ export default function Tasks(){
               </select>
             </label>
             <label>Due
-              <input value={due} onChange={e=>setDue(e.target.value)} placeholder="YYYY-MM-DD" />
+             <input
+  type="date"
+  value={dueDate}
+  onChange={(e) => setDueDate(e.target.value)}
+  className="bg-zinc-900 text-white rounded-xl p-3 w-full border border-zinc-700 mt-3 cursor-pointer"
+  style={{
+    colorScheme: "dark",
+  }}
+/>
+
             </label>
             <label>Assignee
               <input value={assignee} onChange={e=>setAssignee(e.target.value)} placeholder="Vendor/Tech name or email" />

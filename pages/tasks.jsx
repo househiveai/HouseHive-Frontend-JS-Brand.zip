@@ -10,9 +10,9 @@ export default function Tasks() {
   const [urgent, setUrgent] = useState(false)
   const [assignee, setAssignee] = useState('')
   const [priority, setPriority] = useState('normal')
-  const [dueDate, setDueDate] = useState('') // ✅ renamed from "due" to match your input
+  const [dueDate, setDueDate] = useState('')
 
-  // Load properties & tasks
+  // Load properties and tasks
   const load = async () => {
     const p = await apiGetProperties()
     setProps(p)
@@ -24,7 +24,7 @@ export default function Tasks() {
     load()
   }, [])
 
-  // Add a new maintenance task
+  // Add new maintenance task
   const add = async () => {
     if (!propertyId || !title) return
     await apiCreateTask({
@@ -35,7 +35,7 @@ export default function Tasks() {
       status: 'open',
       assignee,
       priority,
-      due_date: dueDate, // ✅ matches backend key
+      due_date: dueDate,
     })
     setTitle('')
     setDescription('')
@@ -46,47 +46,72 @@ export default function Tasks() {
     setTasks(await apiGetTasks())
   }
 
+  // Helper: check if overdue
+  const isOverdue = (dateStr) => {
+    if (!dateStr) return false
+    const today = new Date()
+    const due = new Date(dateStr)
+    return due < today && due.toDateString() !== today.toDateString()
+  }
+
   return (
-    <div className="col">
-      <div className="card">
-        <h2 className="h1">Create Maintenance Task</h2>
-        <div className="col" style={{ maxWidth: 720 }}>
-          <label>Property</label>
-          <select
-            value={propertyId || ''}
-            onChange={(e) => setPropertyId(Number(e.target.value))}
-          >
-            {props.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+    <div className="col px-4 py-6">
+      <div className="card bg-[#111111] border border-[#2a2a2a] rounded-2xl p-6 shadow-lg">
+        <h2 className="text-2xl font-bold text-[#FFB400] mb-4">
+          Create Maintenance Task
+        </h2>
 
-          <label>Title</label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+          <div className="col-span-1">
+            <label className="text-gray-300">Property</label>
+            <select
+              value={propertyId || ''}
+              onChange={(e) => setPropertyId(Number(e.target.value))}
+              className="w-full p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
+            >
+              {props.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <label>Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+          <div>
+            <label className="text-gray-300">Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
+            />
+          </div>
 
-          <div className="row">
-            <label className="row">
+          <div className="md:col-span-2">
+            <label className="text-gray-300">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-4 md:col-span-2">
+            <label className="flex items-center text-gray-300 gap-2">
               <input
                 type="checkbox"
                 checked={urgent}
                 onChange={(e) => setUrgent(e.target.checked)}
-              />{' '}
-              Urgent
+                className="accent-[#FFB400]"
+              />
+              Urgent Task
             </label>
 
-            <label>
-              Priority
+            <label className="text-gray-300">
+              Priority:
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
+                className="ml-2 p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
               >
                 <option value="low">Low</option>
                 <option value="normal">Normal</option>
@@ -94,50 +119,88 @@ export default function Tasks() {
               </select>
             </label>
 
-            <label>
-              Due Date
+            <label className="text-gray-300">
+              Due Date:
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="bg-zinc-900 text-white rounded-xl p-3 w-full border border-zinc-700 mt-3 cursor-pointer hover:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-150"
-                style={{
-                  colorScheme: 'dark',
-                }}
+                className="ml-2 bg-zinc-900 text-white rounded-lg p-2 border border-zinc-700 cursor-pointer hover:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400] transition-all duration-150"
+                style={{ colorScheme: 'dark' }}
               />
             </label>
 
-            <label>
-              Assignee
+            <label className="text-gray-300">
+              Assignee:
               <input
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
-                placeholder="Vendor/Tech name or email"
+                placeholder="Vendor / Tech name or email"
+                className="ml-2 p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
               />
             </label>
           </div>
-
-          <button className="btn primary mt-4" onClick={add}>
-            Add Task
-          </button>
         </div>
+
+        <button
+          className="mt-6 bg-[#FFB400] text-black font-semibold py-2 px-6 rounded-xl hover:opacity-90 transition"
+          onClick={add}
+        >
+          Add Task
+        </button>
       </div>
 
-      <div className="list" style={{ marginTop: 12 }}>
-        {tasks.map((t) => (
-          <div className="card" key={t.id}>
-            <div className="h1">{t.title}</div>
-            <div style={{ opacity: 0.85 }}>
-              #{t.property_id} • {t.status}{' '}
-              {t.urgent ? '• 🔥 Urgent' : ''} • {t.priority}{' '}
-              {t.due_date ? '• Due ' + t.due_date : ''}
-            </div>
-            {t.assignee && (
-              <div style={{ opacity: 0.85 }}>Assigned to: {t.assignee}</div>
-            )}
-            <p style={{ opacity: 0.8 }}>{t.description}</p>
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold text-[#FFB400] mb-4">
+          Active Tasks
+        </h2>
+        {tasks.length === 0 ? (
+          <p className="text-gray-400">No tasks yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {tasks.map((t) => {
+              const overdue = isOverdue(t.due_date)
+              const urgentColor = t.urgent ? 'text-red-400' : 'text-gray-300'
+              const overdueColor = overdue ? 'text-red-500 font-semibold' : ''
+              return (
+                <div
+                  key={t.id}
+                  className={`card bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-5 ${
+                    t.urgent ? 'border-red-500' : ''
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className={`text-xl font-semibold ${urgentColor}`}>
+                      {t.title} {t.urgent && '🔥'}
+                    </h3>
+                    <span
+                      className={`text-sm ${overdueColor}`}
+                      title={
+                        overdue
+                          ? 'This task is overdue'
+                          : t.due_date
+                          ? 'Due on ' + t.due_date
+                          : ''
+                      }
+                    >
+                      {t.due_date
+                        ? overdue
+                          ? `⏰ Overdue (${t.due_date})`
+                          : `📅 Due ${t.due_date}`
+                        : 'No due date'}
+                    </span>
+                  </div>
+                  <p className="text-gray-400 mb-2">{t.description}</p>
+                  <p className="text-gray-500 text-sm">
+                    Property #{t.property_id} • {t.priority.toUpperCase()} •{' '}
+                    {t.status}
+                    {t.assignee && ` • Assigned to: ${t.assignee}`}
+                  </p>
+                </div>
+              )
+            })}
           </div>
-        ))}
+        )}
       </div>
     </div>
   )

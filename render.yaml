@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: househive-frontend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: NEXT_PUBLIC_API_URL
+        value: https://househive-backend-v3.onrender.com
+      - key: NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+        sync: false
+      - key: NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+        sync: false
+      - key: NEXT_PUBLIC_ENV
+        value: production

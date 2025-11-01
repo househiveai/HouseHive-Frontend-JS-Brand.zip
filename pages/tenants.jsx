@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Select from 'react-select'
 import {
   apiGetProperties,
   apiCreateProperty,
@@ -9,7 +10,7 @@ import {
 export default function Tenants() {
   const [tenants, setTenants] = useState([])
   const [props, setProps] = useState([])
-  const [propertyId, setPropertyId] = useState('')
+  const [selectedProperty, setSelectedProperty] = useState(null)
   const [newPropertyName, setNewPropertyName] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -27,7 +28,7 @@ export default function Tenants() {
       setError('')
     } catch (err) {
       console.error(err)
-      setError('Failed to connect to server. Please try again.')
+      setError('⚠️ Failed to connect to server.')
     }
   }
 
@@ -37,7 +38,7 @@ export default function Tenants() {
 
   // Add tenant
   const addTenant = async () => {
-    if (!name || !email || !propertyId) {
+    if (!name || !email || !selectedProperty) {
       setError('Please fill in name, email, and select a property.')
       return
     }
@@ -46,7 +47,7 @@ export default function Tenants() {
         name,
         email,
         phone,
-        property_id: propertyId,
+        property_id: selectedProperty.value,
         unit,
         notes,
       })
@@ -55,6 +56,7 @@ export default function Tenants() {
       setPhone('')
       setUnit('')
       setNotes('')
+      setSelectedProperty(null)
       await load()
     } catch (err) {
       console.error(err)
@@ -71,8 +73,9 @@ export default function Tenants() {
         address: '',
         notes: '',
       })
+      const newOption = { value: newProp.id, label: newProp.name }
       setProps([...props, newProp])
-      setPropertyId(newProp.id)
+      setSelectedProperty(newOption)
       setNewPropertyName('')
     } catch (err) {
       console.error(err)
@@ -80,12 +83,24 @@ export default function Tenants() {
     }
   }
 
+  // Property dropdown options
+  const propertyOptions = props.map((p) => ({
+    value: p.id,
+    label: p.name,
+  }))
+
+  // Add "+ Add new property" as the final option
+  const customOptions = [
+    ...propertyOptions,
+    { value: 'new', label: '➕ Add new property' },
+  ]
+
   return (
     <div className="col px-4 py-6">
       <h1 className="text-3xl font-bold text-[#FFB400] mb-4">Tenants</h1>
 
       <div className="card bg-[#111111] border border-[#2a2a2a] rounded-2xl p-6 shadow-lg mb-8">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
           <input
             placeholder="Tenant Name"
             value={name}
@@ -105,35 +120,48 @@ export default function Tenants() {
             className="p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700"
           />
 
-          <div className="flex flex-col">
-            <select
-              value={propertyId}
-              onChange={(e) => setPropertyId(e.target.value)}
-              className="p-2 rounded-lg bg-zinc-900 text-white border border-zinc-700 w-52"
-            >
-              <option value="">Select Property</option>
-              {props.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Inline add property */}
-            <div className="flex items-center mt-2">
-              <input
-                placeholder="Add property..."
-                value={newPropertyName}
-                onChange={(e) => setNewPropertyName(e.target.value)}
-                className="p-1 rounded-lg bg-zinc-900 text-white border border-zinc-700 w-full"
-              />
-              <button
-                onClick={addPropertyInline}
-                className="ml-2 px-3 py-1 bg-[#FFB400] text-black rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                +
-              </button>
-            </div>
+          {/* 🟡 React Select dropdown */}
+          <div style={{ minWidth: '250px' }}>
+            <Select
+              value={selectedProperty}
+              onChange={(selected) => {
+                if (selected.value === 'new') {
+                  const name = prompt('Enter new property name:')
+                  if (name) {
+                    setNewPropertyName(name)
+                    addPropertyInline()
+                  }
+                } else {
+                  setSelectedProperty(selected)
+                }
+              }}
+              options={customOptions}
+              placeholder="Search or select property..."
+              isSearchable
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  backgroundColor: '#181818',
+                  borderColor: '#333',
+                  color: 'white',
+                  borderRadius: '10px',
+                }),
+                menu: (base) => ({
+                  ...base,
+                  backgroundColor: '#222',
+                  color: 'white',
+                }),
+                singleValue: (base) => ({ ...base, color: 'white' }),
+                input: (base) => ({ ...base, color: 'white' }),
+                placeholder: (base) => ({ ...base, color: '#aaa' }),
+                option: (base, { isFocused }) => ({
+                  ...base,
+                  backgroundColor: isFocused ? '#FFB400' : '#222',
+                  color: isFocused ? 'black' : 'white',
+                  cursor: 'pointer',
+                }),
+              }}
+            />
           </div>
 
           <input

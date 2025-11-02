@@ -114,9 +114,12 @@ export default function App({ Component, pageProps }) {
           </nav>
         </header>
 
-        <main className="pt-6 pb-20 px-6">
-          <Component {...pageProps} />
-        </main>
+        <main className="flex justify-center px-4 py-10">
+  <div className="col w-full" style={{ maxWidth: '860px' }}>
+    <Component {...pageProps} />
+  </div>
+</main>
+
 
         <footer className="text-center text-zinc-600 py-6 border-t border-zinc-800">
           © {new Date().getFullYear()} HouseHive.ai — Smart Co-Hosting Powered by AI

@@ -1,5 +1,5 @@
 // /pages/_app.js
-import '@/styles/globals.css'
+import '../styles/globals.css';
 import Head from 'next/head'
 import NavBar from '@/components/NavBar' // NOTE: See step 2 if this alias fails
 

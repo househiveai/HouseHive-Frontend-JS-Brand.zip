@@ -1,9 +1,11 @@
+// /components/NavBar.jsx
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function NavBar() {
   return (
     <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-black border-b border-zinc-800 px-4 sm:px-8 py-4 shadow-lg">
+      {/* Logo + wordmark */}
       <div className="flex items-center justify-center sm:justify-start mb-3 sm:mb-0">
         <Image src="/logo.svg" alt="HouseHive Logo" width={45} height={45} />
         <div className="ml-2">
@@ -12,6 +14,7 @@ export default function NavBar() {
         </div>
       </div>
 
+      {/* Links */}
       <div className="flex flex-wrap justify-center sm:justify-end text-[#FFB400] text-sm font-medium space-x-3 sm:space-x-5">
         <Link href="/dashboard">Dashboard</Link>
         <Link href="/properties">Properties</Link>

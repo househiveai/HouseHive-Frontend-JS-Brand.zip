@@ -1,118 +1,55 @@
-/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Font + Theme */
 body {
-  background-color: #0a0a0a;
-  color: #ffffff;
+  @apply bg-black text-white min-h-screen;
   font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 0;
 }
 
 a {
-  color: #FFB400;
-  text-decoration: none;
+  @apply text-[#FFB400] hover:underline;
 }
 
-a:hover {
-  color: #ffd76b;
+/* Reusable UI elements */
+.btn {
+  @apply px-4 py-2 rounded-xl font-semibold transition-colors duration-150;
 }
 
-header, footer {
-  text-align: center;
-}
-
-header {
-  padding: 1rem 2rem;
-  background: #111;
-  border-bottom: 1px solid #222;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-nav a {
-  margin: 0 0.6rem;
-  font-weight: 500;
-}
-
-nav a:hover {
-  color: #FFB400;
-}
-
-button, .btn {
-  background-color: #FFB400;
-  color: #111;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-button:hover, .btn:hover {
-  background-color: #FFD35C;
+.btn.primary {
+  @apply bg-[#FFB400] text-black hover:bg-yellow-400;
 }
 
 .card {
-  background: #1a1a1a;
-  border: 1px solid #2c2c2c;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-  transition: transform 0.1s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-}
-
-.h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  margin-bottom: 0.8rem;
-  color: #FFB400;
-}
-
-.col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0 auto;
-  max-width: 720px;
-}
-
-.row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  @apply bg-zinc-900 rounded-2xl p-6 shadow-lg border border-zinc-800 mb-4;
 }
 
 input, textarea, select {
-  width: 100%;
-  background: #111;
-  color: #fff;
-  border: 1px solid #333;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 0.95rem;
+  @apply bg-zinc-900 text-white rounded-xl p-3 border border-zinc-700 w-full focus:outline-none focus:ring-2 focus:ring-[#FFB400] mt-2;
 }
 
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: #FFB400;
-  box-shadow: 0 0 4px #FFB400;
+label {
+  @apply font-semibold text-zinc-300 mt-3 block;
 }
 
-textarea {
-  resize: vertical;
+.h1 {
+  @apply text-2xl font-bold text-[#FFB400] mb-3;
+}
+
+h2 {
+  @apply text-lg font-bold text-[#FFB400] mt-4 mb-2;
+}
+
+/* Navbar */
+nav {
+  @apply flex justify-between items-center p-4 bg-black border-b border-zinc-800;
+}
+
+nav a {
+  @apply mx-3 font-medium hover:text-[#FFB400] transition-colors duration-150;
 }
 
 footer {
-  margin-top: 60px;
-  color: #888;
-  border-top: 1px solid #222;
-  padding: 1.5rem;
-  font-size: 0.9rem;
+  @apply border-t border-zinc-800 mt-8 pt-4;
 }

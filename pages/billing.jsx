@@ -1,114 +1,117 @@
-import { useState, useEffect } from 'react'
-import { apiCreateCheckout, apiBillingPortal, apiMe } from '../lib/api'
+import { useEffect, useState } from "react";
+import { apiMe, apiCreateCheckout, apiBillingPortal } from "../lib/api";
 
 export default function Billing() {
-  const [status, setStatus] = useState('')
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null);
+  const [status, setStatus] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("");
 
-  // 🔹 Load user info (current plan)
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await apiMe()
-        setUser(res)
-      } catch (e) {
-        console.error(e)
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchUser()
-  }, [])
+    apiMe().then(setUser).catch(() => setUser(null));
+  }, []);
 
-  // 🔹 Checkout
-  const go = async (plan) => {
-    try {
-      setStatus('Redirecting to Stripe...')
-      const data = await apiCreateCheckout(plan)
-      window.location.href = data.url
-    } catch (e) {
-      setStatus('Failed to fetch: ' + e.message)
-    }
-  }
+  const openPopup = (plan) => {
+    setSelectedPlan(plan);
+    setShowPopup(true);
+  };
 
-  // 🔹 Billing Portal
-  const portal = async () => {
+  const startCheckout = async () => {
+    setStatus("Redirecting to Stripe...");
     try {
-      setStatus('Opening billing portal...')
-      const res = await apiBillingPortal()
-      window.location.href = res.url
+      const data = await apiCreateCheckout(selectedPlan);
+      window.location.href = data.url;
     } catch (e) {
-      setStatus('Failed to open portal: ' + e.message)
+      setStatus("Error connecting to Stripe.");
     }
-  }
+  };
+
+  const openPortal = async () => {
+    setStatus("Opening portal...");
+    try {
+      const data = await apiBillingPortal();
+      window.location.href = data.url;
+    } catch (e) {
+      setStatus("Error opening billing portal.");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start p-8">
-      {/* Header */}
-      <h1 className="text-4xl font-bold text-[#FFB400] mb-6">Billing & Subscription</h1>
+    <div className="p-8 bg-black text-white min-h-screen flex flex-col items-center">
+      <h1 className="text-4xl font-bold text-yellow-400 mb-6">
+        Billing & Subscription
+      </h1>
 
-      {/* Summary Card */}
-      <div className="w-full max-w-lg bg-[#111111] rounded-2xl p-6 mb-8 shadow-lg border border-[#2a2a2a]">
-        <h2 className="text-2xl font-semibold text-[#FFB400] mb-2">Subscription Summary</h2>
-        {loading ? (
-          <p className="text-gray-400">Loading...</p>
-        ) : user ? (
-          <>
-            <p className="text-lg">
-              <span className="font-semibold text-white">{user.name}</span> <br />
-              Plan: <span className="text-[#FFB400] font-medium">{user.plan}</span>
-            </p>
-            <p className="text-gray-400 mt-2 text-sm">
-              Role: {user.role} • Email: {user.email}
-            </p>
-          </>
-        ) : (
-          <p className="text-red-400">Unable to load user info.</p>
-        )}
-      </div>
-
-      {/* Plan Buttons */}
-      <div className="w-full max-w-lg bg-[#111111] rounded-2xl p-6 shadow-lg border border-[#2a2a2a]">
-        <h2 className="text-2xl font-semibold mb-4 text-[#FFB400]">Choose a Plan</h2>
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          <button
-            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
-            onClick={() => go('cohost')}
-          >
-            Co-Host
-          </button>
-          <button
-            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
-            onClick={() => go('pro')}
-          >
-            Pro
-          </button>
-          <button
-            className="bg-[#FFB400] text-black px-5 py-3 rounded-xl font-semibold hover:opacity-80 transition"
-            onClick={() => go('agency')}
-          >
-            Agency
-          </button>
+      {user && (
+        <div className="text-zinc-400 mb-6">
+          Logged in as:{" "}
+          <span className="text-yellow-400">{user.email}</span> — Plan:{" "}
+          <span className="text-yellow-400 font-semibold">{user.plan}</span>
         </div>
+      )}
 
-        <button
-          className="bg-transparent border border-[#FFB400] text-[#FFB400] px-5 py-3 rounded-xl font-semibold hover:bg-[#FFB400] hover:text-black transition"
-          onClick={portal}
-        >
-          Manage Subscription
-        </button>
-
-        {status && (
-          <p className="mt-4 text-gray-300 text-center text-sm">{status}</p>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {["cohost", "pro", "agency"].map((plan) => (
+          <div
+            key={plan}
+            className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 text-center"
+          >
+            <h2 className="text-2xl font-bold text-yellow-400 capitalize mb-2">
+              {plan}
+            </h2>
+            <p className="text-zinc-400 mb-4">
+              {plan === "cohost" && "$19.99 / mo"}
+              {plan === "pro" && "$29.99 / mo"}
+              {plan === "agency" && "$99.99 / mo"}
+            </p>
+            <button
+              onClick={() => openPopup(plan)}
+              className="bg-yellow-400 text-black px-5 py-2 rounded font-semibold hover:opacity-90"
+            >
+              View Details
+            </button>
+          </div>
+        ))}
       </div>
 
-      <footer className="mt-12 text-gray-500 text-sm">
-        © {new Date().getFullYear()} HouseHive.ai
-      </footer>
-    </div>
-  )
-}
+      <button
+        onClick={openPortal}
+        className="mt-8 border border-yellow-400 text-yellow-400 px-6 py-2 rounded hover:bg-yellow-400 hover:text-black transition"
+      >
+        Manage Subscription
+      </button>
 
+      {status && <p className="mt-4 text-zinc-400">{status}</p>}
+
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 p-8 rounded-xl border border-yellow-400 max-w-lg w-full text-center">
+            <h2 className="text-3xl font-bold text-yellow-400 mb-3 capitalize">
+              {selectedPlan} Plan
+            </h2>
+            <p className="text-zinc-300 mb-4">
+              {selectedPlan === "cohost" &&
+                "Perfect for part-time hosts managing 1–3 properties."}
+              {selectedPlan === "pro" &&
+                "For professional landlords managing multiple properties."}
+              {selectedPlan === "agency" &&
+                "For property managers and co-hosting agencies with full AI automation."}
+            </p>
+            <button
+              onClick={startCheckout}
+              className="bg-yellow-400 text-black px-6 py-3 rounded font-semibold hover:opacity-90 mr-4"
+            >
+              Subscribe
+            </button>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="border border-yellow-400 text-yellow-400 px-6 py-3 rounded hover:bg-yellow-400 hover:text-black"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

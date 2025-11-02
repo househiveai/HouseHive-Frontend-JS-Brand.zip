@@ -26,9 +26,10 @@ export default function App({ Component, pageProps }) {
         </main>
 
         {/* --- Footer --- */}
-        <footer className="text-center text-zinc-500 py-4 border-t border-zinc-800 text-sm">
-          © {new Date().getFullYear()} <span className="text-[#FFB400] font-semibold">HouseHive.ai</span>
-        </footer>
+       <footer className="text-center text-zinc-500 py-4 border-t border-zinc-800 text-sm">
+  &copy; {new Date().getFullYear()} <span className="text-[#FFB400] font-semibold">HouseHive.ai</span>
+</footer>
+
       </div>
     </>
   )

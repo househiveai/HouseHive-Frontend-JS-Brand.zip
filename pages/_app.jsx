@@ -1,24 +1,17 @@
-// pages/_app.jsx
 import '../styles/globals.css'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import Head from 'next/head'
+import { DefaultSeo } from 'next-seo'
+import Script from 'next/script'
 
-export default function App({ Component, pageProps }){
+export default function App({ Component, pageProps }) {
   const [loggedIn, setLoggedIn] = useState(false)
-  const [me, setMe] = useState(null)
 
   useEffect(() => {
-    const t = localStorage.getItem('token')
-    if (!t) { setLoggedIn(false); return }
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${t}` }
-    }).then(r=>r.json()).then(d=>{
-      if (d?.email) { setLoggedIn(true); setMe(d) } else { setLoggedIn(false) }
-    }).catch(()=>setLoggedIn(false))
+    setLoggedIn(!!localStorage.getItem('token'))
   }, [])
 
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem('token')
     setLoggedIn(false)
     window.location.href = '/'
@@ -26,49 +19,109 @@ export default function App({ Component, pageProps }){
 
   return (
     <>
-      <Head>
-        <title>HouseHive.ai — Smart Co-Host</title>
-        <meta name="description" content="AI-powered co-host for properties, tenants, maintenance, messages, and billing."/>
-        <link rel="icon" href="/favicon.ico" />
-        {/* Simple GA (optional): */}
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}></script>
-            <script dangerouslySetInnerHTML={{__html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-            `}}/>
-          </>
-        )}
-      </Head>
+      {/* ✅ Google Analytics (replace with your GA ID) */}
+      <Script
+        strategy="afterInteractive"
+        src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+      />
+      <Script id="ga-script" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-XXXXXXXXXX');
+        `}
+      </Script>
 
-      <header className="header">
-        <div className="header-inner">
-          <div className="brand">
-            <Link href="/"><img src="/og-image.png" alt="HouseHive.ai" className="logo" /></Link>
+      {/* ✅ Default SEO + Open Graph */}
+      <DefaultSeo
+        title="HouseHive.ai — Smart Co-Host & AI-Powered Property Assistant"
+        description="Automate your rental and Airbnb management with HouseHive.ai — track tenants, tasks, rent, and guest messages using built-in AI tools."
+        openGraph={{
+          type: 'website',
+          locale: 'en_US',
+          url: 'https://www.househive.ai',
+          site_name: 'HouseHive.ai',
+          images: [
+            {
+              url: '/og-image.png',
+              width: 1200,
+              height: 630,
+              alt: 'HouseHive.ai Dashboard Preview',
+            },
+          ],
+        }}
+        twitter={{
+          handle: '@HouseHiveAI',
+          site: '@HouseHiveAI',
+          cardType: 'summary_large_image',
+        }}
+        additionalMetaTags={[
+          { name: 'keywords', content: 'AI property management, Airbnb co-host, rental automation, landlord assistant, real estate SaaS' },
+          { name: 'author', content: 'HouseHive.ai Team' },
+        ]}
+      />
+
+      {/* ✅ Structured Data (schema.org) */}
+      <Script id="ld-json" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "HouseHive.ai",
+          "url": "https://www.househive.ai",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "AI-powered property management and co-hosting assistant for landlords and Airbnb owners.",
+          "offers": {
+            "@type": "Offer",
+            "price": "19.99",
+            "priceCurrency": "USD"
+          }
+        })}
+      </Script>
+
+      {/* ✅ Header + Navigation */}
+      <div className="bg-black text-white min-h-screen">
+        <header className="bg-zinc-900 border-b border-zinc-800 flex justify-between items-center px-8 py-4 sticky top-0 z-50">
+          <div className="flex items-center space-x-3">
+            <img src="/favicon.ico" alt="HouseHive.ai" className="w-8 h-8" />
+            <Link href="/" className="text-yellow-400 font-bold text-xl">HouseHive.ai</Link>
           </div>
-          <nav className="nav">
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/properties">Properties</Link>
-            <Link href="/tasks">Maintenance</Link>
-            <Link href="/tenants">Tenants</Link>
-            <Link href="/reminders">Rent Reminders</Link>
-            <Link href="/messages">Messages</Link>
-            <Link href="/billing">Billing</Link>
-            {me?.email?.toLowerCase() === 'dntullo@yahoo.com' && <Link href="/admin">Admin</Link>}
-            {!loggedIn ? (
-              <Link className="btn-primary" href="/login">Login</Link>
+          <nav className="flex space-x-6 text-sm font-medium">
+            {loggedIn ? (
+              <>
+                <Link href="/dashboard">Dashboard</Link>
+                <Link href="/properties">Properties</Link>
+                <Link href="/tenants">Tenants</Link>
+                <Link href="/tasks">Maintenance</Link>
+                <Link href="/reminders">Reminders</Link>
+                <Link href="/messages">HiveBot</Link>
+                <Link href="/billing">Billing</Link>
+                <Link href="/admin">Admin</Link>
+                <button
+                  onClick={logout}
+                  className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-300"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
-              <button onClick={handleLogout} className="btn-outline">Logout</button>
+              <>
+                <Link href="/login">Login</Link>
+                <Link href="/register">Register</Link>
+              </>
             )}
           </nav>
-        </div>
-      </header>
+        </header>
 
-      <main><Component {...pageProps}/></main>
-      <div className="footer">© {new Date().getFullYear()} HouseHive.ai</div>
+        <main className="pt-6 pb-20 px-6">
+          <Component {...pageProps} />
+        </main>
+
+        <footer className="text-center text-zinc-600 py-6 border-t border-zinc-800">
+          © {new Date().getFullYear()} HouseHive.ai — Smart Co-Hosting Powered by AI
+        </footer>
+      </div>
     </>
   )
 }

@@ -1,23 +1,32 @@
-// /pages/_app.js
-import '../styles/globals.css';
+import '../styles/globals.css'
 import Head from 'next/head'
-import NavBar from '@/components/NavBar' // NOTE: See step 2 if this alias fails
+import NavBar from '../components/NavBar'
 
 export default function App({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <title>HouseHive.ai — Smart Property Management</title>
-        <meta name="description" content="AI-powered property management for landlords, co-hosts, and agencies." />
+        <title>HouseHive.ai</title>
+        <meta
+          name="description"
+          content="AI-powered property management with smart co-hosting, maintenance tracking, and guest messaging — powered by HiveBot."
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-black text-white">
-        <NavBar />
-        <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+      <div className="min-h-screen bg-black text-white flex flex-col">
+        {/* --- Navbar --- */}
+        <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+          <NavBar />
+        </header>
+
+        {/* --- Main Content --- */}
+        <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
           <Component {...pageProps} />
         </main>
-        <footer className="text-center text-sm mt-12 pb-6 text-zinc-400 border-t border-zinc-800">
+
+        {/* --- Footer --- */}
+        <footer className="text-center text-zinc-500 py-4 border-t border-zinc-800 text-sm">
           © {new Date().getFullYear()} <span className="text-[#FFB400] font-semibold">HouseHive.ai</span>
         </footer>
       </div>

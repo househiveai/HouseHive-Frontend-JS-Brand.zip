@@ -1,16 +1,18 @@
+// /pages/_app.js
 import '@/styles/globals.css'
 import Head from 'next/head'
-import NavBar from '@/components/NavBar'
+import NavBar from '@/components/NavBar' // NOTE: See step 2 if this alias fails
 
 export default function App({ Component, pageProps }) {
   return (
     <>
       <Head>
         <title>HouseHive.ai — Smart Property Management</title>
-        <meta name="description" content="AI-powered property management for landlords and co-hosts." />
+        <meta name="description" content="AI-powered property management for landlords, co-hosts, and agencies." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="min-h-screen bg-black text-white font-sans">
+
+      <div className="min-h-screen bg-black text-white">
         <NavBar />
         <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
           <Component {...pageProps} />

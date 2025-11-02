@@ -1,68 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-:root{
-  --bg:#0d0d0d;
-  --card:#111318;
-  --muted:#b8b8b8;
-  --gold:#FFB400;
-  --gold-2:#ffd46b;
-  --text:#ffffff;
-  --border:#1f2228;
-}
-*{box-sizing:border-box}
-html, body { padding: 0; margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; background:var(--bg); color:var(--text); }
-a { text-decoration: none; color: inherit; }
-.header{
-  position: sticky; top:0; z-index:10;
-  background: linear-gradient(90deg, rgba(255,180,0,0.08), transparent 40%), #0b0b0b;
-  border-bottom:1px solid var(--border);
-}
-.logo{width:65%;}
-.header-inner{max-width:1100px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:12px}
-.brand .title{font-weight:800;letter-spacing:.5px}
-.brand .tag{color:var(--muted);font-size:.9rem}
-nav{display:flex;gap:14px;flex-wrap:wrap}
-nav a{padding:8px 10px;border-radius:10px;border:1px solid transparent}
-nav a:hover{border-color:var(--border);background:#0f0f0f}
-nav button{padding:8px 10px;border-radius:10px;border:1px solid transparent}
-nav button:hover{border-color:var(--border);background:#0f0f0f}
-
-main{max-width:1100px;margin:0 auto;padding:28px;}
-.hero{
-  background: radial-gradient(1200px 500px at 20% -20%, rgba(255,180,0,0.15), transparent), linear-gradient(180deg, #0d0d0d, #0a0a0a);
-  border:1px solid var(--border); border-radius:20px; padding:28px;
-}
-.container { background: var(--card); color: var(--text); border-radius: 16px; padding: 24px; border:1px solid var(--border) }
-.card { border:1px solid var(--border); border-radius: 16px; padding: 18px; background:#0f1014; }
-.h1 { font-size: 1.6rem; font-weight: 800; }
-.row { display: flex; gap: 12px; align-items: center; flex-wrap:wrap }
-.col { display: flex; flex-direction: column; gap: 8px; }
-.btn { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; background:#101115; color:#fff }
-.btn.primary { background: linear-gradient(180deg, var(--gold), var(--gold-2)); color: #111; font-weight: 800; box-shadow:0 4px 20px rgba(255,180,0,.25) }
-.btn.primary:hover{filter:brightness(1.05)}
-.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-label { font-size: 0.9rem; color: var(--muted) }
-select, input, textarea { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background:#0e0f13; color:#fff }
-.badge { padding: 4px 10px; border-radius: 12px; border: 1px solid var(--border); font-size: .8rem; background:#0f1014 }
-.footer{opacity:.7;text-align:center;margin:18px 0}
-.dash{background:#f0f0f0; color:black; border-radius: 10px; padding:8px 10px; transition:opacity .2s ease-in-out; border-radius:12px; box-shadow:0 4px 20px rgba(128, 127, 127, 0.25); font-weight:800}
-
-
-.plan-wrapper{
-  display:flex; justify-content: center; align-items: center;
-  color: black;
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #000;
+  color: #fff;
 }
 
-.plan-wrapper .plan{ max-width: 25%;
-    background-color: #f0f0f0;
-    padding: 40px;
-    margin: 30px 15px;
-    border-radius: 10px;
-    }
+a {
+  color: #FFB400;
+  text-decoration: none;
+}
 
-.overlay-plan{
-  position: fixed; top:0; left:0; width:100%; height:100%;
-  background: rgba(0,0,0,0.6);
-  display:flex; justify-content:center; align-items:center;
-  z-index:20;
+a:hover {
+  opacity: 0.8;
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input, textarea, select {
+  outline: none;
+  font-size: 1rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #FFB400;
+  box-shadow: 0 0 0 2px rgba(255, 180, 0, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #2d2d2d;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #FFB400;
 }

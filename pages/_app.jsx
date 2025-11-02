@@ -82,7 +82,8 @@ export default function App({ Component, pageProps }) {
 
       {/* ✅ Header + Navigation */}
       <div className="bg-black text-white min-h-screen">
-        <header className="bg-zinc-900 border-b border-zinc-800 flex justify-between items-center px-8 py-4 sticky top-0 z-50">
+        <header className="bg-zinc-900 border-b border-zinc-800 flex flex-col sm:flex-row sm:justify-between items-center px-6 py-4 sticky top-0 z-50">
+
           <div className="flex items-center space-x-3">
             <img src="/favicon.ico" alt="HouseHive.ai" className="w-8 h-8" />
             <Link href="/" className="text-yellow-400 font-bold text-xl">HouseHive.ai</Link>
@@ -114,9 +115,12 @@ export default function App({ Component, pageProps }) {
           </nav>
         </header>
 
-        <main className="pt-6 pb-20 px-6">
-          <Component {...pageProps} />
-        </main>
+       <main className="flex justify-center px-4 py-10">
+  <div className="col w-full" style={{ maxWidth: '860px' }}>
+    <Component {...pageProps} />
+  </div>
+</main>
+
 
         <footer className="text-center text-zinc-600 py-6 border-t border-zinc-800">
           © {new Date().getFullYear()} HouseHive.ai — Smart Co-Hosting Powered by AI

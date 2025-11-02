@@ -2,57 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global look & feel */
-body { @apply bg-black text-white; }
-
-a { @apply text-[#FFB400] hover:underline; }
-
-.card { @apply bg-zinc-900 rounded-2xl p-6 shadow-lg border border-zinc-800 mb-4; }
-
-input, textarea, select {
-  @apply bg-zinc-900 text-white rounded-xl p-3 border border-zinc-700 w-full
-         focus:outline-none focus:ring-2 focus:ring-[#FFB400] mt-2;
+/* HOUSEHIVE.AI Theme */
+body {
+  @apply bg-white text-black font-sans antialiased;
 }
 
-.btn {
-  @apply px-4 py-2 rounded-xl font-semibold bg-[#FFB400] text-black hover:bg-yellow-400 transition;
+h1, h2, h3, h4, h5 {
+  @apply text-gold font-bold;
 }
 
-
-
-.btn.primary {
-  @apply bg-[#FFB400] text-black hover:bg-yellow-400;
+a {
+  @apply text-gold hover:underline;
 }
 
-.card {
-  @apply bg-zinc-900 rounded-2xl p-6 shadow-lg border border-zinc-800 mb-4;
+button {
+  @apply bg-gold text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-gold transition;
 }
 
-input, textarea, select {
-  @apply bg-zinc-900 text-white rounded-xl p-3 border border-zinc-700 w-full focus:outline-none focus:ring-2 focus:ring-[#FFB400] mt-2;
+/* Brand colors */
+:root {
+  --color-gold: #FFB400;
+  --color-black: #111111;
+  --color-white: #FFFFFF;
 }
 
-label {
-  @apply font-semibold text-zinc-300 mt-3 block;
+.text-gold {
+  color: var(--color-gold);
 }
-
-.h1 {
-  @apply text-2xl font-bold text-[#FFB400] mb-3;
-}
-
-h2 {
-  @apply text-lg font-bold text-[#FFB400] mt-4 mb-2;
-}
-
-/* Navbar */
-nav {
-  @apply flex justify-between items-center p-4 bg-black border-b border-zinc-800;
-}
-
-nav a {
-  @apply mx-3 font-medium hover:text-[#FFB400] transition-colors duration-150;
-}
-
-footer {
-  @apply border-t border-zinc-800 mt-8 pt-4;
+.bg-gold {
+  background-color: var(--color-gold);
 }

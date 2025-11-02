@@ -1,236 +1,46 @@
-import { useEffect, useState } from 'react'
-import { apiGetProperties, apiGetTasks, apiMe, apiChat } from '../lib/api'
+import { useEffect, useState } from "react";
+import { apiGetProperties, apiGetTasks } from "../lib/api";
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null)
-  const [properties, setProperties] = useState([])
-  const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState(null)
-  const [aiInput, setAiInput] = useState('')
-  const [aiResponse, setAiResponse] = useState('')
+  const [props, setProps] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
-  // Load user + data
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const u = await apiMe()
-        const p = await apiGetProperties()
-        const t = await apiGetTasks()
-        setUser(u)
-        setProperties(p)
-        setTasks(t)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadData()
-  }, [])
-
-  const [chatHistory, setChatHistory] = useState([])
-
-const handleAI = async () => {
-  if (!aiInput.trim()) return
-  setAiResponse('Thinking...')
-  try {
-    const res = await fetch('https://househive-backend-v3-zip.onrender.com/api/ai/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: aiInput,
-        user_id: user?.email || 'guest',
-      }),
-    })
-    const data = await res.json()
-    setAiResponse(data.reply)
-    setChatHistory([...chatHistory, { role: 'user', content: aiInput }, { role: 'assistant', content: data.reply }])
-
-    // Update property/task lists if new ones were created
-    if (data.properties) setProperties(data.properties)
-    if (data.tasks) setTasks(data.tasks)
-
-    setAiInput('')
-  } catch (e) {
-    setAiResponse('Error: ' + e.message)
-  }
-}
-
-
-  const renderModal = () => {
-    if (!modal) return null
-    const close = () => {
-      setModal(null)
-      setAiInput('')
-      setAiResponse('')
-    }
-
-    const titleMap = {
-      property: 'Add New Property',
-      maintenance: 'Create Maintenance Task',
-      ai: 'Ask HiveBot Assistant',
-      report: 'View Reports',
-    }
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-[#111111] rounded-2xl p-8 w-[28rem] text-center border border-[#FFB400] shadow-lg">
-          <h2 className="text-2xl text-[#FFB400] font-bold mb-4">{titleMap[modal]}</h2>
-
-          {modal === 'ai' ? (
-            <>
-              <textarea
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                placeholder="Ask HiveBot a question or give a task..."
-                className="w-full h-32 p-3 rounded-lg bg-black text-white border border-[#2a2a2a] mb-4 focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
-              />
-              <button
-                className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold hover:opacity-80 transition"
-                onClick={handleAI}
-              >
-                Ask HiveBot
-              </button>
-     {chatHistory.length > 0 && (
-  <div className="mt-4 text-left bg-[#1a1a1a] p-3 rounded-lg text-gray-300 text-sm h-56 overflow-y-auto">
-    {chatHistory.map((msg, i) => (
-      <div key={i} className={`mb-2 ${msg.role === 'assistant' ? 'text-[#FFB400]' : 'text-white'}`}>
-        <strong>{msg.role === 'assistant' ? 'HiveBot:' : 'You:'}</strong> {msg.content}
-      </div>
-    ))}
-  </div>
-)}
-
-            </>
-          ) : (
-            <p className="text-gray-400 mb-6">
-              This feature will connect to AI automation soon.
-            </p>
-          )}
-
-          <button
-            className="bg-[#FFB400] text-black px-6 py-2 rounded-xl font-semibold mt-6 hover:opacity-80 transition"
-            onClick={close}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-[#FFB400] text-2xl">
-        Loading your dashboard...
-      </div>
-    )
+    apiGetProperties().then(setProps);
+    apiGetTasks().then(setTasks);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 flex flex-col items-center relative">
-      {/* Floating Quick Actions Bar */}
-      <div className="fixed top-6 right-6 bg-[#111111] border border-[#2a2a2a] rounded-2xl p-4 shadow-lg flex flex-col gap-3 z-40">
-        <button
-          onClick={() => setModal('property')}
-          className="btn"
-        >
-          <img src='/add.svg'></img> Add Property
-        </button>
-        <button
-          onClick={() => setModal('maintenance')}
-          className="btn"
-        >
-          <img src='/notes.svg'></img> New Task
-        </button>
-        <button
-          onClick={() => setModal('ai')}
-          className="btn"
-        >
-          <img src='/bot.svg'></img> Ask HiveBot
-        </button>
-        <button
-          onClick={() => setModal('report')}
-          className="btn"
-        >
-          <img src='/chart.svg'></img> Reports
-        </button>
-      </div>
+    <div className="p-8 bg-black text-white min-h-screen">
+      <h1 className="text-4xl font-bold text-yellow-400 mb-6">Dashboard</h1>
 
-      {/* Header */}
-      <h1 className="text-4xl font-bold text-[#FFB400] mb-2 mt-4">
-        🏠 Welcome Back, {user?.name || 'User'}
-      </h1>
-      <p className="text-gray-400 mb-8 text-center">
-        Plan: <span className="text-[#FFB400]">{user?.plan}</span> • Role: {user?.role}
-      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700">
+          <h2 className="text-xl font-bold mb-3 text-yellow-400">Properties</h2>
+          {props.length === 0 && (
+            <p className="text-zinc-500">No properties yet.</p>
+          )}
+          {props.map((p) => (
+            <div key={p.id} className="border-b border-zinc-700 py-2">
+              <div className="font-semibold">{p.name}</div>
+              <div className="text-zinc-400 text-sm">{p.address}</div>
+            </div>
+          ))}
+        </div>
 
-      {/* Properties Section */}
-      <div className="w-full max-w-5xl bg-[#111111] rounded-2xl p-6 mb-8 shadow-lg border border-[#2a2a2a]">
-        <h2 className="text-2xl font-semibold text-[#FFB400] mb-4">Your Properties</h2>
-        {properties.length === 0 ? (
-          <p className="text-gray-400">No properties yet.</p>
-        ) : (
-          <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-4">
-            {properties.map((p) => (
-              <div
-                key={p.id}
-                className="bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a] hover:border-[#FFB400] transition"
-              >
-                <h3 className="text-xl font-semibold text-[#FFB400] mb-1">{p.name}</h3>
-                <p className="text-gray-400 text-sm">{p.address}</p>
+        <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700">
+          <h2 className="text-xl font-bold mb-3 text-yellow-400">Tasks</h2>
+          {tasks.length === 0 && <p className="text-zinc-500">No tasks yet.</p>}
+          {tasks.map((t) => (
+            <div key={t.id} className="border-b border-zinc-700 py-2">
+              <div className="font-semibold">{t.title}</div>
+              <div className="text-zinc-400 text-sm">
+                {t.priority} • {t.status}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
-
-      {/* Maintenance Section */}
-      <div className="w-full max-w-5xl bg-[#111111] rounded-2xl p-6 shadow-lg border border-[#2a2a2a]">
-        <h2 className="text-2xl font-semibold text-[#FFB400] mb-4">Maintenance Tracker</h2>
-        {tasks.length === 0 ? (
-          <p className="text-gray-400">No maintenance tasks.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-[#2a2a2a] text-gray-400">
-                  <th className="py-2 px-3">Task</th>
-                  <th className="py-2 px-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks.map((t) => (
-                  <tr
-                    key={t.id}
-                    className="border-b border-[#2a2a2a] hover:bg-[#1a1a1a] transition"
-                  >
-                    <td className="py-2 px-3 text-white">{t.task}</td>
-                    <td
-                      className={`py-2 px-3 font-semibold ${
-                        t.status === 'Completed'
-                          ? 'text-green-400'
-                          : t.status === 'In Progress'
-                          ? 'text-yellow-400'
-                          : 'text-red-400'
-                      }`}
-                    >
-                      {t.status}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      <footer className="mt-12 text-gray-500 text-sm">
-        © {new Date().getFullYear()} HouseHive.ai
-      </footer>
-
-      {renderModal()}
     </div>
-  )
+  );
 }
-

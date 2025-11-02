@@ -11,8 +11,8 @@ export default function App({ Component, pageProps }) {
       </Head>
       <div className="min-h-screen bg-black text-white font-sans">
         <Component {...pageProps} />
-        <footer className="text-center text-sm mt-12 pb-6 text-zinc-400">
-          © 2025 <span className="text-[#FFB400] font-semibold">HouseHive.ai</span>
+        <footer className="text-center text-sm mt-12 pb-6 text-zinc-400 border-t border-zinc-800">
+          © {new Date().getFullYear()} <span className="text-[#FFB400] font-semibold">HouseHive.ai</span>
         </footer>
       </div>
     </>

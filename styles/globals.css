@@ -2,20 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Font + Theme */
 body {
-  @apply bg-black text-white min-h-screen;
-  font-family: 'Inter', sans-serif;
+  @apply bg-black text-white min-h-screen font-sans;
 }
 
 a {
   @apply text-[#FFB400] hover:underline;
 }
 
-/* Reusable UI elements */
-.btn {
-  @apply px-4 py-2 rounded-xl font-semibold transition-colors duration-150;
+.card {
+  @apply bg-zinc-900 rounded-2xl p-6 shadow-lg border border-zinc-800 mb-4;
 }
+
+input, textarea, select {
+  @apply bg-zinc-900 text-white rounded-xl p-3 border border-zinc-700 w-full focus:outline-none focus:ring-2 focus:ring-[#FFB400] mt-2;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-xl font-semibold bg-[#FFB400] text-black hover:bg-yellow-400 transition-all duration-150;
+}
+
 
 .btn.primary {
   @apply bg-[#FFB400] text-black hover:bg-yellow-400;

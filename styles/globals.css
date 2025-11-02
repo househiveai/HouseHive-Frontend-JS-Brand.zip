@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+/* styles/globals.css */
 
-html, body {
-  padding: 0;
-  margin: 0;
+body {
+  background-color: #0a0a0a;
+  color: #ffffff;
   font-family: 'Inter', sans-serif;
-  background-color: #000;
-  color: #fff;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -14,31 +14,105 @@ a {
 }
 
 a:hover {
-  opacity: 0.8;
+  color: #ffd76b;
 }
 
-button {
+header, footer {
+  text-align: center;
+}
+
+header {
+  padding: 1rem 2rem;
+  background: #111;
+  border-bottom: 1px solid #222;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav a {
+  margin: 0 0.6rem;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #FFB400;
+}
+
+button, .btn {
+  background-color: #FFB400;
+  color: #111;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+button:hover, .btn:hover {
+  background-color: #FFD35C;
+}
+
+.card {
+  background: #1a1a1a;
+  border: 1px solid #2c2c2c;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  transition: transform 0.1s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #FFB400;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 720px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 input, textarea, select {
-  outline: none;
-  font-size: 1rem;
+  width: 100%;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.95rem;
 }
 
 input:focus, textarea:focus, select:focus {
+  outline: none;
   border-color: #FFB400;
-  box-shadow: 0 0 0 2px rgba(255, 180, 0, 0.3);
+  box-shadow: 0 0 4px #FFB400;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
+textarea {
+  resize: vertical;
 }
-::-webkit-scrollbar-thumb {
-  background-color: #2d2d2d;
-  border-radius: 6px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: #FFB400;
+
+footer {
+  margin-top: 60px;
+  color: #888;
+  border-top: 1px solid #222;
+  padding: 1.5rem;
+  font-size: 0.9rem;
 }

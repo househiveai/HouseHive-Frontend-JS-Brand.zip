@@ -7,52 +7,55 @@ export default function App({ Component, pageProps }) {
 
   useEffect(() => {
     setLoggedIn(!!localStorage.getItem('token'))
-    const onStorage = () => setLoggedIn(!!localStorage.getItem('token'))
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  function handleLogout() {
+  const logout = () => {
     localStorage.removeItem('token')
     setLoggedIn(false)
-    window.location.href = '/login'
+    window.location.href = '/'
   }
 
   return (
-    <>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <title>HouseHive.ai</title>
-        <meta name="description" content="AI-powered property assistant" />
-      </head>
-      <header className="header">
-        <div className="header-inner">
-          <div className="brand">
-            <Link href="/">
-              <img src="/og-image.png" alt="HouseHive.ai" className="logo" />
-            </Link>
-          </div>
-          <nav>
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/properties">Properties</Link>
-            <Link href="/tasks">Maintenance</Link>
-            <Link href="/tenants">Tenants</Link>
-            <Link href="/reminders">Rent Reminders</Link>
-            <Link href="/messages">Messages</Link>
-            <Link href="/billing">Billing</Link>
-            {loggedIn ? (
-              <>
-                <Link href="/admin">Admin</Link>
-                <button onClick={handleLogout} className="logout-btn">Logout</button>
-              </>
-            ) : (
-              <Link href="/login" className="login-btn">Login</Link>
-            )}
-          </nav>
+    <div className="bg-black text-white min-h-screen">
+      <header className="bg-zinc-900 border-b border-zinc-800 flex justify-between items-center px-8 py-4 sticky top-0 z-50">
+        <div className="flex items-center space-x-3">
+          <img src="/favicon.ico" alt="HouseHive.ai" className="w-8 h-8" />
+          <Link href="/" className="text-yellow-400 font-bold text-xl">HouseHive.ai</Link>
         </div>
+        <nav className="flex space-x-6 text-sm font-medium">
+          {loggedIn ? (
+            <>
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/properties">Properties</Link>
+              <Link href="/tenants">Tenants</Link>
+              <Link href="/tasks">Maintenance</Link>
+              <Link href="/reminders">Reminders</Link>
+              <Link href="/messages">HiveBot</Link>
+              <Link href="/billing">Billing</Link>
+              <Link href="/admin">Admin</Link>
+              <button
+                onClick={logout}
+                className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-300"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login">Login</Link>
+              <Link href="/register">Register</Link>
+            </>
+          )}
+        </nav>
       </header>
-      <main><Component {...pageProps} /></main>
-      <footer className="footer">© {new Date().getFullYear()} HouseHive.ai</footer>
-    </>
+
+      <main className="pt-6 pb-20 px-6">
+        <Component {...pageProps} />
+      </main>
+
+      <footer className="text-center text-zinc-600 py-6 border-t border-zinc-800">
+        © {new Date().getFullYear()} HouseHive.ai — Powered by AI
+      </footer>
+    </div>
   )
 }

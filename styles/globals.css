@@ -8,27 +8,13 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-  @apply text-gold font-bold;
+  @apply text-[#FFB400] font-bold;
 }
 
 a {
-  @apply text-gold hover:underline;
+  @apply text-[#FFB400] hover:underline;
 }
 
 button {
-  @apply bg-gold text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-gold transition;
-}
-
-/* Brand colors */
-:root {
-  --color-gold: #FFB400;
-  --color-black: #111111;
-  --color-white: #FFFFFF;
-}
-
-.text-gold {
-  color: var(--color-gold);
-}
-.bg-gold {
-  background-color: var(--color-gold);
+  @apply bg-[#FFB400] text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-[#FFB400] transition;
 }

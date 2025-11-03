@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center pt-35% text-center px-6">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center text-center px-6">
       <img src="/og-image.png" alt="HouseHive.ai" className="w-40 mb-6" />
       <h1 className="text-5xl font-bold text-yellow-400 mb-4">HouseHive.ai</h1>
       <p className="text-zinc-300 max-w-lg">

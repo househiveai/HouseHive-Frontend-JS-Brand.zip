@@ -7,11 +7,11 @@ export default function NavBar() {
     <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-black border-b border-zinc-800 px-4 sm:px-8 py-4 shadow-lg">
       {/* Logo + wordmark */}
       <div className="flex items-center justify-center sm:justify-start mb-3 sm:mb-0">
-        <Image src="/logo.svg" alt="HouseHive Logo" width={45} height={45} />
+        <Link href="/"><Image src="/logo.svg" alt="HouseHive Logo" width={45} height={45} />
         <div className="ml-2">
           <h1 className="text-[#FFB400] text-xl font-bold leading-none">HOUSEHIVE.AI</h1>
           <p className="text-xs text-zinc-400 -mt-1">Property management using AI</p>
-        </div>
+        </div></Link>
       </div>
 
       {/* Links */}

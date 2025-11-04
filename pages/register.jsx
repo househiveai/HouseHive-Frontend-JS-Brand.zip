@@ -1,56 +1,62 @@
-import { useState } from "react";
-import { apiRegister } from "../lib/api";
 
-export default function Register() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiRegister } from "@/lib/api";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
 
-  const register = async () => {
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
     try {
-      const res = await apiRegister({ email, password });
-      if (res.token) {
-        localStorage.setItem("token", res.token);
-        window.location.href = "/dashboard";
-      }
-    } catch {
-      setMsg("Registration failed.");
+      await apiRegister({ name, email, password });
+      router.push("/login");
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center text-white">
-      <div className="bg-zinc-900 p-10 rounded-xl border border-zinc-700 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-          Create Account
-        </h1>
+    <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+      <form
+        onSubmit={handleRegister}
+        className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
+      >
+        <h1 className="text-2xl font-semibold text-center">Create Account</h1>
         <input
+          type="text"
+          placeholder="Full Name"
+          className="w-full border p-2 rounded"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="email"
           placeholder="Email"
+          className="w-full border p-2 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="bg-zinc-800 rounded p-3 w-full mb-3"
         />
         <input
           type="password"
           placeholder="Password"
+          className="w-full border p-2 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="bg-zinc-800 rounded p-3 w-full mb-4"
         />
+        {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
-          onClick={register}
-          className="w-full bg-yellow-400 text-black py-3 font-semibold rounded hover:opacity-90"
+          type="submit"
+          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium p-2 rounded"
         >
-          Register
+          Sign Up
         </button>
-        {msg && <p className="text-red-400 text-center mt-3">{msg}</p>}
-        <p className="text-zinc-500 text-center mt-5">
-          Already have an account?{" "}
-          <a href="/login" className="text-yellow-400 underline">
-            Login
-          </a>
-        </p>
-      </div>
-    </div>
+      </form>
+    </main>
   );
 }

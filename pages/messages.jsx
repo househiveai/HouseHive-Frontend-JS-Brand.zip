@@ -7,16 +7,23 @@ export default function Messages() {
 
   const send = async () => {
     if (!input) return;
-    const msgs = [...log, { role: "user", content: input }];
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    const msgs = [...log, { role: "user", content: trimmed }];
     setLog(msgs);
     setInput("");
     try {
-      const res = await apiChat(input);
+      const res = await apiChat(trimmed, msgs);
       setLog([...msgs, { role: "assistant", content: res.reply }]);
-    } catch {
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "HiveBot could not connect to the AI API.";
       setLog([
         ...msgs,
-        { role: "assistant", content: "HiveBot could not connect to the AI API." },
+        { role: "assistant", content: message },
       ]);
     }
   };

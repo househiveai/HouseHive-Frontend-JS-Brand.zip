@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { apiLogin } from "../lib/api";
 
 export default function LoginPage() {
@@ -8,15 +9,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError("");
+    setIsSubmitting(true);
     try {
       await apiLogin(email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "Unable to sign in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -33,6 +39,8 @@ export default function LoginPage() {
           className="w-full border p-2 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
         />
         <input
           type="password"
@@ -40,14 +48,23 @@ export default function LoginPage() {
           className="w-full border p-2 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          required
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
-          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium p-2 rounded"
+          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-not-allowed text-white font-medium p-2 rounded transition"
+          disabled={isSubmitting}
         >
-          Sign In
+          {isSubmitting ? "Signing In..." : "Sign In"}
         </button>
+        <p className="text-sm text-center text-gray-500">
+          Don&apos;t have an account?{" "}
+          <Link className="text-yellow-600 hover:underline" href="/register">
+            Create one
+          </Link>
+        </p>
       </form>
     </main>
   );

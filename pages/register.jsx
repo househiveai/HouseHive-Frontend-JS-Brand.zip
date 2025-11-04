@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { apiRegister } from "../lib/api";
 
 export default function RegisterPage() {
@@ -9,15 +10,20 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError("");
+    setIsSubmitting(true);
     try {
       await apiRegister({ name, email, password });
       router.push("/login");
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "Unable to sign up. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -34,6 +40,8 @@ export default function RegisterPage() {
           className="w-full border p-2 rounded"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
+          required
         />
         <input
           type="email"
@@ -41,6 +49,8 @@ export default function RegisterPage() {
           className="w-full border p-2 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
         />
         <input
           type="password"
@@ -48,14 +58,24 @@ export default function RegisterPage() {
           className="w-full border p-2 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          minLength={8}
+          required
         />
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"
-          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium p-2 rounded"
+          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-not-allowed text-white font-medium p-2 rounded transition"
+          disabled={isSubmitting}
         >
-          Sign Up
+          {isSubmitting ? "Signing Up..." : "Sign Up"}
         </button>
+        <p className="text-sm text-center text-gray-500">
+          Already have an account?{" "}
+          <Link className="text-yellow-600 hover:underline" href="/login">
+            Sign in
+          </Link>
+        </p>
       </form>
     </main>
   );

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "./UserMenu";
@@ -19,8 +18,9 @@ export default function NavBar() {
         </Link>
       </div>
 
-      {/* Nav Links + User */}
+      {/* Links + User Menu */}
       <div className="flex items-center space-x-5 text-[#FFB400] text-sm font-medium">
+
         <Link href="/dashboard">Dashboard</Link>
         <Link href="/properties">Properties</Link>
         <Link href="/maintenance">Maintenance</Link>
@@ -28,9 +28,10 @@ export default function NavBar() {
         <Link href="/reminders">Reminders</Link>
         <Link href="/messages">Messages</Link>
         <Link href="/billing">Billing</Link>
-        <UserMenu></UserMenu>
-      </div>
 
+        {/* ✅ Replaces old login link */}
+        <UserMenu />
+      </div>
     </nav>
   );
 }

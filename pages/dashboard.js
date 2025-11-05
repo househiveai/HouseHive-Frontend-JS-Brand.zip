@@ -1,18 +1,17 @@
 // pages/dashboard.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { apiMe, apiGetProperties, apiGetInsights } from "../lib/api";
+import { apiMe, apiGetInsights } from "../lib/api";
 
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [properties, setProperties] = useState([]);
   const [insights, setInsights] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login");   // ✅ Redirect if not logged in
+      router.push("/login");
       return;
     }
 
@@ -21,13 +20,9 @@ export default function Dashboard() {
         const u = await apiMe();
         setUser(u);
 
-        const p = await apiGetProperties();
-        setProperties(p);
-
-        const i = await apiGetInsights();
-        setInsights(i);
-      } catch (err) {
-        console.error(err);
+        const data = await apiGetInsights();
+        setInsights(data);
+      } catch {
         router.push("/login");
       }
     }
@@ -35,76 +30,100 @@ export default function Dashboard() {
     load();
   }, []);
 
-  if (!user || !insights) {
-    return <div style={styles.loading}>Loading Dashboard...</div>;
-  }
+  if (!user || !insights) return <div style={styles.loading}>Loading Dashboard...</div>;
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.title}>Welcome back, {user.name || user.email}</h1>
+      <h1 style={styles.title}>Welcome, {user.name || user.email}</h1>
 
-      <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>AI Assistant Insights</h2>
-        <p style={styles.insightText}>{insights.summary}</p>
+      <div style={styles.summaryBox}>
+        <div style={styles.summaryText}>{insights.summary}</div>
       </div>
 
-      <div style={styles.card}>
-        <h2 style={styles.sectionTitle}>Your Properties</h2>
-
-        {properties.length === 0 ? (
-          <p>No properties yet. Add one!</p>
-        ) : (
-          properties.map((p) => (
-            <div key={p.id} style={styles.propertyItem}>
-              <strong>{p.name}</strong>
-              <div>{p.address}</div>
-            </div>
-          ))
-        )}
-
-        <button
-          onClick={() => router.push("/properties")}
-          style={styles.button}
-        >
-          Manage Properties
-        </button>
+      <div style={styles.statsGrid}>
+        <StatCard label="Properties" value={insights.property_count} />
+        <StatCard label="Tenants" value={insights.tenant_count} />
+        <StatCard label="Open Tasks" value={insights.open_tasks} />
+        <StatCard label="Reminders" value={insights.reminders} />
       </div>
+
+      {insights.property_count === 0 && (
+        <div style={styles.ctaBox}>
+          <p style={{ marginBottom: "12px" }}>No data yet.</p>
+          <button style={styles.ctaButton} onClick={() => router.push("/properties")}>
+            + Add Your First Property
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div style={styles.card}>
+      <div style={styles.cardValue}>{value}</div>
+      <div style={styles.cardLabel}>{label}</div>
     </div>
   );
 }
 
 const styles = {
-  page: { padding: "40px", fontFamily: "sans-serif" },
-  title: { color: "#D4A018", marginBottom: "20px" },
+  page: { padding: "40px", minHeight: "100vh", background: "#000", color: "#fff" },
+  title: { fontSize: "30px", marginBottom: "25px", color: "#FFC230" },
+
+  summaryBox: {
+    background: "#111",
+    border: "1px solid #FFC230",
+    padding: "18px",
+    borderRadius: "10px",
+    marginBottom: "30px",
+  },
+  summaryText: {
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "#FFC230",
+  },
+
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "20px",
+    marginBottom: "40px",
+  },
+
   card: {
-    background: "#fff",
+    background: "#111",
     padding: "20px",
     borderRadius: "10px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    marginBottom: "25px",
+    border: "1px solid #333",
+    textAlign: "center",
   },
-  sectionTitle: { marginBottom: "10px" },
-  insightText: { marginBottom: "10px", color: "#444" },
-  propertyItem: {
-    padding: "10px 0",
-    borderBottom: "1px solid #eee",
-    marginBottom: "10px",
+
+  cardValue: { fontSize: "32px", fontWeight: "bold", color: "#FFC230" },
+  cardLabel: { fontSize: "14px", opacity: 0.75 },
+
+  ctaBox: {
+    background: "#111",
+    padding: "25px",
+    borderRadius: "10px",
+    textAlign: "center",
+    border: "1px dashed #FFC230",
   },
-  button: {
-    padding: "10px 15px",
-    background: "#D4A018",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
+  ctaButton: {
+    background: "#FFC230",
+    color: "#000",
+    padding: "10px 16px",
+    borderRadius: "8px",
     cursor: "pointer",
-    marginTop: "10px",
+    fontWeight: "600",
+    border: "none",
   },
+
   loading: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "90vh",
-    fontSize: "20px",
-    color: "#666",
-  }
+    color: "white",
+    textAlign: "center",
+    paddingTop: "80px",
+    fontSize: "22px",
+  },
 };

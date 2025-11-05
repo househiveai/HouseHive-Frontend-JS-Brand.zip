@@ -31,15 +31,15 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl p-4 text-sm border border-gray-200 z-50">
-          <p className="font-semibold">Not Logged in</p>
+        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl p-4 text-black border border-gray-200 z-50">
+          <p className="font-light">Not Logged in</p>
           
 
           <button
             onClick={router.push("/login")}
             className="mt-3 w-full text-left text-red-600 hover:underline"
           >
-            Log out
+            Login
           </button>
         </div>
       )}

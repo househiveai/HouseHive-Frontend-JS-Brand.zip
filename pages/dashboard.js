@@ -19,9 +19,6 @@ function DashboardContent() {
 
   
 
-  if (!user) {
-    return <div style={styles.loading}>Loading Dashboard...</div>;
-  }
 
   return (
     <div style={styles.page}>

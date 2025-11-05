@@ -1,66 +1,97 @@
+// pages/properties.js
 import { useEffect, useState } from "react";
-import { apiAddProperty, apiGetProperties } from "../lib/api";
+import { useRouter } from "next/router";
+import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
 
-export default function Properties() {
+export default function PropertiesPage() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
+  const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
 
-  const load = async () => {
-    try {
-      const data = await apiGetProperties();
-      setProperties(data);
-    } catch (err) {
-      console.error(err.message);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
     }
-  };
 
-  const addProperty = async () => {
-    if (!name) return alert("Enter a property name");
-    await apiAddProperty({ name, address });
-    setName(""); setAddress("");
-    await load();
-  };
+    async function load() {
+      try {
+        const u = await apiMe();
+        setUser(u);
 
-  useEffect(() => { load(); }, []);
+        const p = await apiGetProperties();
+        setProperties(p);
+      } catch (err) {
+        console.error(err);
+        router.push("/login");
+      }
+    }
+
+    load();
+  }, []);
+
+  async function handleAddProperty(e) {
+    e.preventDefault();
+    try {
+      const newProp = await apiAddProperty({ name, address });
+      setProperties([newProp, ...properties]); // ✅ instantly update UI
+      setShowForm(false);
+      setName("");
+      setAddress("");
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  if (!user) return <div style={styles.loading}>Loading...</div>;
 
   return (
-    <div className="p-8 bg-black text-white min-h-screen">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">Properties</h1>
+    <div style={styles.page}>
+      <h1 style={styles.title}>Your Properties</h1>
 
-      <div className="bg-zinc-900 p-6 rounded-xl border border-yellow-400 mb-6 max-w-2xl">
-        <h2 className="text-lg text-yellow-300 mb-2">Add New Property</h2>
-        <input
-          placeholder="Property Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full bg-zinc-800 text-white rounded p-2 mb-2"
-        />
-        <input
-          placeholder="Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          className="w-full bg-zinc-800 text-white rounded p-2 mb-3"
-        />
-        <button
-          onClick={addProperty}
-          className="bg-yellow-400 text-black px-4 py-2 rounded font-semibold hover:opacity-90"
-        >
-          Add Property
-        </button>
-      </div>
+      <button style={styles.addButton} onClick={() => setShowForm(true)}>
+        + Add Property
+      </button>
 
-      <div className="max-w-2xl">
+      {showForm && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h2>Add Property</h2>
+            <form onSubmit={handleAddProperty}>
+              <input
+                style={styles.input}
+                placeholder="Property Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <input
+                style={styles.input}
+                placeholder="Address (optional)"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+              <div style={styles.modalActions}>
+                <button type="submit" style={styles.saveButton}>Save</button>
+                <button type="button" style={styles.cancelButton} onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div style={styles.list}>
         {properties.length === 0 ? (
-          <p className="text-gray-500">No properties yet.</p>
+          <p>No properties yet.</p>
         ) : (
           properties.map((p) => (
-            <div
-              key={p.id}
-              className="p-4 mb-3 bg-zinc-900 border border-zinc-700 rounded-xl"
-            >
-              <div className="font-semibold text-yellow-300">{p.name}</div>
-              <div className="text-gray-400 text-sm">{p.address}</div>
+            <div key={p.id} style={styles.item}>
+              <strong>{p.name}</strong>
+              <div>{p.address}</div>
             </div>
           ))
         )}
@@ -68,3 +99,37 @@ export default function Properties() {
     </div>
   );
 }
+
+const styles = {
+  page: { padding: "40px" },
+  title: { marginBottom: "20px", color: "#D4A018" },
+  addButton: {
+    padding: "10px 15px",
+    background: "#D4A018",
+    color: "white",
+    borderRadius: "6px",
+    border: "none",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+  list: { marginTop: "20px" },
+  item: {
+    padding: "15px",
+    border: "1px solid #eee",
+    borderRadius: "8px",
+    marginBottom: "10px",
+    background: "#fff",
+  },
+  loading: { padding: "50px", textAlign: "center" },
+
+  // modal
+  modalOverlay: {
+    position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+    display: "flex", justifyContent: "center", alignItems: "center",
+  },
+  modal: { background: "#fff", padding: "25px", borderRadius: "10px", width: "350px" },
+  input: { width: "100%", padding: "10px", marginBottom: "10px", borderRadius: "6px", border: "1px solid #ccc" },
+  modalActions: { display: "flex", justifyContent: "space-between" },
+  saveButton: { background: "#2c7", padding: "10px 15px", border: "none", borderRadius: "6px", cursor: "pointer", color: "#fff" },
+  cancelButton: { background: "#999", padding: "10px 15px", border: "none", borderRadius: "6px", cursor: "pointer", color: "#fff" },
+};

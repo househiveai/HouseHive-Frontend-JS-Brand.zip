@@ -27,23 +27,22 @@ export default function LoginPage() {
         <h2 style={styles.title}>Log in to HouseHive</h2>
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            value={email}
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-            required
-          />
+         <input
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="Email"
+  className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"
+/>
 
-          <input
-            type="password"   // ✅ Shows typed dots, not invisible
-            value={password}
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-            required
-          />
+<input
+  type={showPassword ? "text" : "password"}
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  placeholder="Password"
+  className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"
+/>
+
 
           {error && <p style={styles.error}>{error}</p>}
 

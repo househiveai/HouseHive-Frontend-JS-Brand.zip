@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { apiLogin } from "../lib/api";
 
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -11,20 +12,16 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await apiLogin(email, password);
-      router.push("/dashboard");
-    } catch (err) {
-      setError(err?.message || "Unable to sign in. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleLogin = async () => {
+  setError("");
+  try {
+    await apiLogin(email, password);
+    router.push("/dashboard");
+  } catch (e) {
+    setError(e.message || "Login failed");
+  }
+};
+
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">

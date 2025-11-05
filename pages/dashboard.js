@@ -1,8 +1,8 @@
-// pages/dashboard.js
+"use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import RequireAuth from "../components/RequireAuth";
-import { apiInsights, apiMe } from "../lib/api";
+import { apiMe, apiGetInsights } from "../lib/api";
 
 export default function Dashboard() {
   return (
@@ -17,11 +17,22 @@ function DashboardContent() {
   const [user, setUser] = useState(null);
   const [insights, setInsights] = useState(null);
 
-  
   useEffect(() => {
-      const stored = localStorage.getItem("user");
-      setUser(stored ? JSON.parse(stored) : null);
-    }, [router.pathname]);
+    async function load() {
+      try {
+        const u = await apiMe();
+        setUser(u);
+      } catch {
+        router.push("/login");
+      }
+    }
+    load();
+  }, []);
+
+  // ✅ Wait until user + insights load
+  if (!user) {
+    return <div style={styles.loading}>Loading Dashboard...</div>;
+  }
 
   return (
     <div style={styles.page}>

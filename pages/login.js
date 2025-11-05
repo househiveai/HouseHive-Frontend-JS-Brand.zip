@@ -43,6 +43,15 @@ export default function LoginPage() {
   className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"
 />
 
+  const [showPassword, setShowPassword] = useState(false);
+<button
+  type="button"
+  className="text-sm text-[#FFB400] mt-1"
+  onClick={() => setShowPassword(!showPassword)}
+>
+  {showPassword ? "Hide Password" : "Show Password"}
+</button>
+
 
           {error && <p style={styles.error}>{error}</p>}
 

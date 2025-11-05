@@ -2,38 +2,66 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import RequireAuth from "../components/RequireAuth";
+import { apiInsights, apiMe } from "../lib/api";
 
 export default function Dashboard() {
-
-  if (!user) return <div style={styles.loading}>Loading Dashboard...</div>;
-
   return (
     <RequireAuth>
-      <div style={styles.page}>
-        <h1 style={styles.title}>Welcome, {user.name || user.email}</h1>
-
-        <div style={styles.summaryBox}>
-          <div style={styles.summaryText}>{insights.summary}</div>
-        </div>
-
-        <div style={styles.statsGrid}>
-          <StatCard label="Properties" value={insights.property_count} />
-          <StatCard label="Tenants" value={insights.tenant_count} />
-          <StatCard label="Open Tasks" value={insights.open_tasks} />
-          <StatCard label="Reminders" value={insights.reminders} />
-        </div>
-
-        {insights.property_count === 0 && (
-          <div style={styles.ctaBox}>
-            <p style={{ marginBottom: "12px" }}>No data yet.</p>
-            <button style={styles.ctaButton} onClick={() => router.push("/properties")}>
-              + Add Your First Property
-            </button>
-          </div>
-        )}
-      </div>
+      <DashboardContent />
     </RequireAuth>
+  );
+}
 
+function DashboardContent() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [insights, setInsights] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const u = await apiMe();
+        setUser(u);
+        const i = await apiInsights();
+        setInsights(i);
+      } catch (err) {
+        router.push("/login");
+      }
+    }
+    load();
+  }, [router]);
+
+  if (!user || !insights) {
+    return <div style={styles.loading}>Loading Dashboard...</div>;
+  }
+
+  return (
+    <div style={styles.page}>
+      <h1 style={styles.title}>Welcome, {user.name || user.email}</h1>
+
+      <div style={styles.summaryBox}>
+        <div style={styles.summaryText}>{insights.summary}</div>
+      </div>
+
+      <div style={styles.statsGrid}>
+        <StatCard label="Properties" value={insights.property_count} />
+        <StatCard label="Tenants" value={insights.tenant_count} />
+        <StatCard label="Open Tasks" value={insights.open_tasks} />
+        <StatCard label="Reminders" value={insights.reminders} />
+      </div>
+
+      {insights.property_count === 0 && (
+        <div style={styles.ctaBox}>
+          <p style={{ marginBottom: "12px" }}>No data yet.</p>
+          <button
+            style={styles.ctaButton}
+            onClick={() => router.push("/properties")}
+          >
+            + Add Your First Property
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 

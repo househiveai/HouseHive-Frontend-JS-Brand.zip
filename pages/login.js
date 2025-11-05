@@ -30,20 +30,20 @@ export default function LoginPage() {
         className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
       >
         <h1 className="text-2xl font-semibold text-center">Log in to HouseHive</h1>
-     <input
+<input
   type="email"
-  placeholder="Email"
   value={email}
   onChange={(e) => setEmail(e.target.value)}
-  className="w-full p-3 mb-3 rounded-md bg-[#EAF0FF] text-black placeholder-gray-600 border border-gray-300 focus:border-yellow-400 focus:outline-none"
+  placeholder="Email"
+  className="w-full p-2 border border-gray-300 rounded bg-white text-black"
 />
 
 <input
   type="password"
-  placeholder="Password"
   value={password}
   onChange={(e) => setPassword(e.target.value)}
-  className="w-full p-3 mb-3 rounded-md bg-[#EAF0FF] text-black placeholder-gray-600 border border-gray-300 focus:border-yellow-400 focus:outline-none"
+  placeholder="Password"
+  className="w-full p-2 border border-gray-300 rounded bg-white text-black"
 />
 
         {error && <p className="text-red-600 text-sm">{error}</p>}

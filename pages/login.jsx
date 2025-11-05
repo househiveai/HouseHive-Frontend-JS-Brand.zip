@@ -30,24 +30,22 @@ export default function LoginPage() {
         className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
       >
         <h1 className="text-2xl font-semibold text-center">Log in to HouseHive</h1>
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border p-2 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
+     <input
+  type="email"
+  placeholder="Email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  className="w-full p-3 mb-3 rounded-md bg-[#EAF0FF] text-black placeholder-gray-600 border border-gray-300 focus:border-yellow-400 focus:outline-none"
+/>
+
+<input
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  className="w-full p-3 mb-3 rounded-md bg-[#EAF0FF] text-black placeholder-gray-600 border border-gray-300 focus:border-yellow-400 focus:outline-none"
+/>
+
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button
           type="submit"

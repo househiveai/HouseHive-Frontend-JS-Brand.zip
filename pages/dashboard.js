@@ -19,7 +19,7 @@ function DashboardContent() {
 
   
 
-  if (!user || !insights) {
+  if (!user) {
     return <div style={styles.loading}>Loading Dashboard...</div>;
   }
 

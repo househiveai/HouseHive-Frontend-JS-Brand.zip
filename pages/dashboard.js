@@ -1,4 +1,4 @@
-"use client";
+// pages/dashboard.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import RequireAuth from "../components/RequireAuth";
@@ -18,22 +18,25 @@ function DashboardContent() {
   const [insights, setInsights] = useState(null);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const u = await apiMe();
-        setUser(u);
+    // Load user from localStorage
+    const stored = localStorage.getItem("user");
+    setUser(stored ? JSON.parse(stored) : null);
 
+    // Load insights from backend
+    async function loadInsights() {
+      try {
         const data = await apiGetInsights();
         setInsights(data);
-      } catch {
-        router.push("/login");
+      } catch (err) {
+        console.log("Insights error:", err);
       }
     }
-    load();
-  }, []);
 
-  // ✅ Wait until user + insights load
-  if (!user) {
+    loadInsights();
+  }, [router.pathname]);
+
+  // ✅ Safely wait for data
+  if (!user || !insights) {
     return <div style={styles.loading}>Loading Dashboard...</div>;
   }
 
@@ -79,7 +82,6 @@ function StatCard({ label, value }) {
 const styles = {
   page: { padding: "40px", minHeight: "100vh", background: "#000", color: "#fff" },
   title: { fontSize: "30px", marginBottom: "25px", color: "#FFC230" },
-
   summaryBox: {
     background: "#111",
     border: "1px solid #FFC230",
@@ -92,14 +94,12 @@ const styles = {
     fontWeight: "500",
     color: "#FFC230",
   },
-
   statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
     gap: "20px",
     marginBottom: "40px",
   },
-
   card: {
     background: "#111",
     padding: "20px",
@@ -107,10 +107,8 @@ const styles = {
     border: "1px solid #333",
     textAlign: "center",
   },
-
   cardValue: { fontSize: "32px", fontWeight: "bold", color: "#FFC230" },
   cardLabel: { fontSize: "14px", opacity: 0.75 },
-
   ctaBox: {
     background: "#111",
     padding: "25px",
@@ -127,7 +125,6 @@ const styles = {
     fontWeight: "600",
     border: "none",
   },
-
   loading: {
     color: "white",
     textAlign: "center",

@@ -1,19 +1,27 @@
 // pages/properties.js
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
 import RequireAuth from "../components/RequireAuth";
 
 export default function PropertiesPage() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
 
-  
+  useEffect(() => {
+    async function load() {
+      try {
+        const u = await apiMe();
+        setUser(u);
 
+        const props = await apiGetProperties();
+        setProperties(props);
+      } catch (err) {
+        console.log("Auth failed:", err);
+      }
+    }
     load();
   }, []);
 
@@ -21,7 +29,7 @@ export default function PropertiesPage() {
     e.preventDefault();
     try {
       const newProp = await apiAddProperty({ name, address });
-      setProperties([newProp, ...properties]); // ✅ instantly update UI
+      setProperties([newProp, ...properties]);
       setShowForm(false);
       setName("");
       setAddress("");
@@ -33,54 +41,55 @@ export default function PropertiesPage() {
   if (!user) return <div style={styles.loading}>Loading...</div>;
 
   return (
-    RequireAuth>
-    <div style={styles.page}>
-      <h1 style={styles.title}>Your Properties</h1>
+    <RequireAuth>
+      <div style={styles.page}>
+        <h1 style={styles.title}>Your Properties</h1>
 
-      <button style={styles.addButton} onClick={() => setShowForm(true)}>
-        + Add Property
-      </button>
+        <button style={styles.addButton} onClick={() => setShowForm(true)}>
+          + Add Property
+        </button>
 
-      {showForm && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h2>Add Property</h2>
-            <form onSubmit={handleAddProperty}>
-              <input
-                style={styles.input}
-                placeholder="Property Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <input
-                style={styles.input}
-                placeholder="Address (optional)"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-              <div style={styles.modalActions}>
-                <button type="submit" style={styles.saveButton}>Save</button>
-                <button type="button" style={styles.cancelButton} onClick={() => setShowForm(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <div style={styles.list}>
-        {properties.length === 0 ? (
-          <p>No properties yet.</p>
-        ) : (
-          properties.map((p) => (
-            <div key={p.id} style={styles.item}>
-              <strong>{p.name}</strong>
-              <div>{p.address}</div>
+        {showForm && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <h2>Add Property</h2>
+              <form onSubmit={handleAddProperty}>
+                <input
+                  style={styles.input}
+                  placeholder="Property Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <input
+                  style={styles.input}
+                  placeholder="Address (optional)"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+                <div style={styles.modalActions}>
+                  <button type="submit" style={styles.saveButton}>Save</button>
+                  <button type="button" style={styles.cancelButton} onClick={() => setShowForm(false)}>Cancel</button>
+                </div>
+              </form>
             </div>
-          ))
+          </div>
         )}
+
+        <div style={styles.list}>
+          {properties.length === 0 ? (
+            <p>No properties yet.</p>
+          ) : (
+            properties.map((p) => (
+              <div key={p.id} style={styles.item}>
+                <strong>{p.name}</strong>
+                <div>{p.address}</div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   );
 }
 
@@ -105,8 +114,6 @@ const styles = {
     background: "#fff",
   },
   loading: { padding: "50px", textAlign: "center" },
-
-  // modal
   modalOverlay: {
     position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
     display: "flex", justifyContent: "center", alignItems: "center",

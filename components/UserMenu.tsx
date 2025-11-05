@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -23,17 +23,21 @@ export default function UserMenu() {
     <div className="relative">
       {/* If NOT logged in → show Login + Sign Up buttons */}
       {!user && (
-        <div className="flex items-center space-x-3">
-          <Link href="/login" className="text-[#FFB400] hover:underline text-sm">
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="bg-[#FFB400] text-black text-sm px-3 py-1 rounded-md font-semibold hover:opacity-80"
+        <>
+          <button
+            onClick={() => setOpen(!open)}
+            className="w-10 h-10 rounded-full bg-[#F0F0F0] text-black flex items-center justify-center font-bold"
           >
-            Sign Up
-          </Link>
-        </div>
+            
+          </button>
+
+          {open && (
+            <div className="absolute right-0 mt-2 w-52 bg-white shadow-xl rounded-xl p-4 text-sm border border-gray-200 z-50">
+              
+              <Link href="/login">Login</Link>
+            </div>
+          )}
+        </>
       )}
 
       {/* If logged in → show avatar */}

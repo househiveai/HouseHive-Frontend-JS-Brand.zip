@@ -17,19 +17,7 @@ function DashboardContent() {
   const [user, setUser] = useState(null);
   const [insights, setInsights] = useState(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const u = await apiMe();
-        setUser(u);
-        const i = await apiInsights();
-        setInsights(i);
-      } catch (err) {
-        router.push("/login");
-      }
-    }
-    load();
-  }, [router]);
+  
 
   if (!user || !insights) {
     return <div style={styles.loading}>Loading Dashboard...</div>;

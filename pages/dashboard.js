@@ -1,119 +1,110 @@
 // pages/dashboard.js
-import { useEffect, useState } from 'react'
-import { apiGetProperties, apiGetTasks, apiGetTenants, apiGetReminders } from '../lib/api'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { apiMe, apiGetProperties, apiGetInsights } from "../lib/api";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState({
-    properties: 0,
-    tasks: 0,
-    tenants: 0,
-    reminders: 0
-  })
-  const [loading, setLoading] = useState(true)
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [insights, setInsights] = useState(null);
 
   useEffect(() => {
-    const load = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");   // ✅ Redirect if not logged in
+      return;
+    }
+
+    async function load() {
       try {
-        const [props, tasks, tenants, reminders] = await Promise.all([
-          apiGetProperties(),
-          apiGetTasks(),
-          apiGetTenants(),
-          apiGetReminders()
-        ])
-        setStats({
-          properties: props.length,
-          tasks: tasks.length,
-          tenants: tenants.length,
-          reminders: reminders.length
-        })
-      } catch (e) {
-        console.error('Error loading dashboard:', e)
-      } finally {
-        setLoading(false)
+        const u = await apiMe();
+        setUser(u);
+
+        const p = await apiGetProperties();
+        setProperties(p);
+
+        const i = await apiGetInsights();
+        setInsights(i);
+      } catch (err) {
+        console.error(err);
+        router.push("/login");
       }
     }
-    load()
-  }, [])
+
+    load();
+  }, []);
+
+  if (!user || !insights) {
+    return <div style={styles.loading}>Loading Dashboard...</div>;
+  }
 
   return (
-    <div className="col" style={{ maxWidth: 1000 }}>
-      <div className="h1">Dashboard</div>
+    <div style={styles.page}>
+      <h1 style={styles.title}>Welcome back, {user.name || user.email}</h1>
 
-      {/* Stat cards grid */}
-      <div
-        className="grid gap-5 mt-4"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        }}
-      >
-        <StatCard title="Properties" value={stats.properties} icon="🏠" color="#FFB400" />
-        <StatCard title="Active Tasks" value={stats.tasks} icon="🧰" color="#00C2FF" />
-        <StatCard title="Tenants" value={stats.tenants} icon="👥" color="#52FFB4" />
-        <StatCard title="Reminders" value={stats.reminders} icon="⏰" color="#FF6B6B" />
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>AI Assistant Insights</h2>
+        <p style={styles.insightText}>{insights.summary}</p>
       </div>
 
-      {/* Quick action panel */}
-      <div className="card" style={{ marginTop: 32 }}>
-        <div className="h1">Quick Actions</div>
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-          <ActionButton link="/properties" label="Add Property" emoji="🏡" />
-          <ActionButton link="/tasks" label="Create Task" emoji="🧾" />
-          <ActionButton link="/tenants" label="Add Tenant" emoji="👤" />
-          <ActionButton link="/reminders" label="New Reminder" emoji="⏳" />
-        </div>
-      </div>
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Your Properties</h2>
 
-      {/* AI activity log preview */}
-      <div className="card" style={{ marginTop: 32 }}>
-        <div className="h1">AI Assistant Insights</div>
-        <p style={{ opacity: 0.9 }}>
-          HiveBot is analyzing your portfolio and automating reminders and maintenance tasks.
-        </p>
-        <p style={{ fontStyle: 'italic', color: '#aaa', marginTop: 8 }}>
-          Example: “2 properties have open maintenance requests. 1 tenant rent reminder scheduled.”
-        </p>
-      </div>
+        {properties.length === 0 ? (
+          <p>No properties yet. Add one!</p>
+        ) : (
+          properties.map((p) => (
+            <div key={p.id} style={styles.propertyItem}>
+              <strong>{p.name}</strong>
+              <div>{p.address}</div>
+            </div>
+          ))
+        )}
 
-      {!loading && stats.properties === 0 && (
-        <div className="card" style={{ marginTop: 20, textAlign: 'center' }}>
-          <p>No data yet. Add your first property to get started!</p>
-        </div>
-      )}
+        <button
+          onClick={() => router.push("/properties")}
+          style={styles.button}
+        >
+          Manage Properties
+        </button>
+      </div>
     </div>
-  )
+  );
 }
 
-function StatCard({ title, value, icon, color }) {
-  return (
-    <div
-      className="card flex flex-col items-center justify-center text-center"
-      style={{
-        borderColor: color,
-        background: 'linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)',
-        padding: '30px 20px',
-      }}
-    >
-      <div style={{ fontSize: '2rem' }}>{icon}</div>
-      <div style={{ fontSize: '1.2rem', fontWeight: '600', marginTop: 8 }}>{title}</div>
-      <div style={{ fontSize: '2rem', fontWeight: '700', color }}>{value}</div>
-    </div>
-  )
-}
-
-function ActionButton({ link, label, emoji }) {
-  return (
-    <a
-      href={link}
-      className="card flex flex-col items-center justify-center hover:opacity-90"
-      style={{
-        background: '#111',
-        textAlign: 'center',
-        padding: '20px 10px',
-        border: '1px solid #2a2a2a',
-      }}
-    >
-      <div style={{ fontSize: '1.8rem' }}>{emoji}</div>
-      <div style={{ fontWeight: '600', marginTop: 8, color: '#FFB400' }}>{label}</div>
-    </a>
-  )
-}
+const styles = {
+  page: { padding: "40px", fontFamily: "sans-serif" },
+  title: { color: "#D4A018", marginBottom: "20px" },
+  card: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    marginBottom: "25px",
+  },
+  sectionTitle: { marginBottom: "10px" },
+  insightText: { marginBottom: "10px", color: "#444" },
+  propertyItem: {
+    padding: "10px 0",
+    borderBottom: "1px solid #eee",
+    marginBottom: "10px",
+  },
+  button: {
+    padding: "10px 15px",
+    background: "#D4A018",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  loading: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "90vh",
+    fontSize: "20px",
+    color: "#666",
+  }
+};

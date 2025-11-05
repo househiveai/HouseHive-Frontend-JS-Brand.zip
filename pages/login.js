@@ -16,20 +16,18 @@ export default function LoginPage() {
 
     try {
       await apiLogin(email, password);
-      router.push("/dashboard"); // ✅ SUCCESS → DASHBOARD
+      router.push("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed");
+      setError("Invalid login, try again.");
     }
   }
 
   return (
-    <div className="flex justify-center items-center h-screen bg-[#111111] px-4">
-      <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-center text-[#FFB400] mb-6">
-          Log in to HouseHive
-        </h2>
+    <div className="flex justify-center items-center min-h-screen bg-[#F6F6F6]">
+      <div className="bg-white shadow-lg p-8 rounded-xl w-[360px] text-center">
+        <h2 className="text-xl font-bold mb-6 text-[#FFB400]">Log in to HouseHive</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             value={email}
@@ -39,7 +37,7 @@ export default function LoginPage() {
             required
           />
 
-          <div className="relative">
+          <div>
             <input
               type={showPassword ? "text" : "password"}
               value={password}
@@ -52,31 +50,31 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-sm text-[#FFB400]"
+              className="text-[#FFB400] text-sm mt-1"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? "Hide Password" : "Show Password"}
             </button>
           </div>
 
-          <div className="text-center">
-            <a href="/forgot" className="text-[#FFB400] text-sm hover:underline">
-              Forgot password?
-            </a>
-          </div>
-
-          {error && <p className="text-red-600 text-center text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"
-            className="w-full p-3 bg-[#FFB400] text-black font-semibold rounded-md hover:opacity-90"
+            className="w-full p-3 bg-[#FFB400] hover:bg-[#e0a000] text-black font-semibold rounded-md"
           >
             Sign In
           </button>
         </form>
 
-        <p className="text-center mt-4 text-black text-sm">
+        <p className="mt-4 text-sm">
+          <a href="/forgot" className="text-[#FFB400] hover:underline">
+            Forgot password?
+          </a>
+        </p>
+
+        <p className="mt-3 text-sm">
           Don’t have an account?{" "}
-          <a href="/register" className="text-[#FFB400] font-medium">
+          <a href="/register" className="text-[#FFB400] hover:underline">
             Create one
           </a>
         </p>

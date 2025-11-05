@@ -43,6 +43,12 @@ export default function LoginPage() {
   className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"
 />
 
+    <p className="mt-3 text-center">
+  <a href="/forgot" className="text-[#FFB400] text-sm hover:underline">
+    Forgot password?
+  </a>
+</p>
+
   const [showPassword, setShowPassword] = useState(false);
 <button
   type="button"

@@ -1,66 +1,111 @@
-"use client";
+// pages/login.js
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { apiLogin } from "../lib/api";
-
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async () => {
-  setError("");
-  try {
-    await apiLogin(email, password);
-    router.push("/dashboard");
-  } catch (e) {
-    setError(e.message || "Login failed");
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+
+    try {
+      await apiLogin(email, password);
+      router.push("/dashboard");   // ✅ SUCCESS → GO TO DASHBOARD
+    } catch (err) {
+      setError(err.message || "Login failed");
+    }
   }
-};
-
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
-      >
-        <h1 className="text-2xl font-semibold text-center">Log in to HouseHive</h1>
-<input
-  type="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  placeholder="Email"
-  className="w-full p-2 border border-gray-300 rounded bg-white text-black"
-/>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Log in to HouseHive</h2>
 
-<input
-  type="password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  placeholder="Password"
-  className="w-full p-2 border border-gray-300 rounded bg-white text-black"
-/>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            value={email}
+            placeholder="Email"
+            onChange={(e) => setEmail(e.target.value)}
+            style={styles.input}
+            required
+          />
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button
-          type="submit"
-          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-not-allowed text-white font-medium p-2 rounded transition"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Signing In..." : "Sign In"}
-        </button>
-        <p className="text-sm text-center text-gray-500">
-          Don&apos;t have an account?{" "}
-          <Link className="text-yellow-600 hover:underline" href="/register">
-            Create one
-          </Link>
+          <input
+            type="password"   // ✅ Shows typed dots, not invisible
+            value={password}
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+            style={styles.input}
+            required
+          />
+
+          {error && <p style={styles.error}>{error}</p>}
+
+          <button type="submit" style={styles.button}>
+            Sign In
+          </button>
+        </form>
+
+        <p style={styles.linkText}>
+          Don’t have an account? <a href="/register">Create one</a>
         </p>
-      </form>
-    </main>
+      </div>
+    </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "90vh",
+    background: "#fafafa",
+  },
+  card: {
+    background: "white",
+    padding: "32px",
+    borderRadius: "12px",
+    width: "350px",
+    boxShadow: "0 5px 20px rgba(0,0,0,0.08)",
+    textAlign: "center",
+  },
+  title: {
+    color: "#D4A018",
+    marginBottom: "20px",
+  },
+  input: {
+    width: "100%",
+    padding: "12px",
+    marginBottom: "12px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "15px",
+  },
+  button: {
+    width: "100%",
+    padding: "12px",
+    background: "#D4A018",
+    border: "none",
+    color: "white",
+    fontWeight: "bold",
+    borderRadius: "6px",
+    cursor: "pointer",
+    marginTop: "6px",
+  },
+  error: {
+    color: "red",
+    marginBottom: "6px",
+    fontSize: "14px",
+  },
+  linkText: {
+    marginTop: "12px",
+    fontSize: "14px",
+  },
+};

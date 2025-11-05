@@ -1,12 +1,12 @@
 // pages/dashboard.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { apiMe, apiGetInsights } from "../lib/api";
+
 
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [insights, setInsights] = useState(null);
+ 
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -28,7 +28,7 @@ export default function Dashboard() {
     load();
   }, []);
 
-  if (!user || !insights) return <div style={styles.loading}>Loading Dashboard...</div>;
+  if (!user) return <div style={styles.loading}>Loading Dashboard...</div>;
 
   return (
     <div style={styles.page}>

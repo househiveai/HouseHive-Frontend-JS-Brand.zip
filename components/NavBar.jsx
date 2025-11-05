@@ -28,9 +28,7 @@ export default function NavBar() {
         <Link href="/reminders">Reminders</Link>
         <Link href="/messages">Messages</Link>
         <Link href="/billing">Billing</Link>
-
-        {/* ✅ User avatar / login replaced here */}
-        <UserMenu />
+        <UserMenu></UserMenu>
       </div>
 
     </nav>

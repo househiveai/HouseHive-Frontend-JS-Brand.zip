@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
+import RequireAuth from "../components/RequireAuth";
 
 export default function PropertiesPage() {
   const router = useRouter();
@@ -11,25 +12,7 @@ export default function PropertiesPage() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    async function load() {
-      try {
-        const u = await apiMe();
-        setUser(u);
-
-        const p = await apiGetProperties();
-        setProperties(p);
-      } catch (err) {
-        console.error(err);
-        router.push("/login");
-      }
-    }
+  
 
     load();
   }, []);
@@ -50,6 +33,7 @@ export default function PropertiesPage() {
   if (!user) return <div style={styles.loading}>Loading...</div>;
 
   return (
+    RequireAuth>
     <div style={styles.page}>
       <h1 style={styles.title}>Your Properties</h1>
 

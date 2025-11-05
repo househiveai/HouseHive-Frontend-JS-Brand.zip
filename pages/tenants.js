@@ -7,8 +7,10 @@ import {
   apiAddTenant,
   apiGetProperties,
 } from "../lib/api";
+import RequireAuth from "../components/RequireAuth";
 
 export default function TenantsPage() {
+  RequireAuth;
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [tenants, setTenants] = useState([]);
@@ -21,30 +23,7 @@ export default function TenantsPage() {
   const [phone, setPhone] = useState("");
   const [propertyId, setPropertyId] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    async function load() {
-      try {
-        const u = await apiMe();
-        setUser(u);
-
-        const p = await apiGetProperties();
-        setProperties(p);
-
-        const t = await apiGetTenants();
-        setTenants(t);
-      } catch {
-        router.push("/login");
-      }
-    }
-
-    load();
-  }, []);
+  
 
   async function handleAddTenant(e) {
     e.preventDefault();

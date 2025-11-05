@@ -1,36 +1,15 @@
 // pages/dashboard.js
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
+import RequireAuth from "../components/RequireAuth";
 
 export default function Dashboard() {
-  const router = useRouter();
-  const [user, setUser] = useState(null);
- 
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    async function load() {
-      try {
-        const u = await apiMe();
-        setUser(u);
-
-      } catch {
-        router.push("/login");
-      }
-    }
-
-    load();
-  }, []);
+  RequireAuth;
 
   if (!user) return <div style={styles.loading}>Loading Dashboard...</div>;
 
   return (
+ 
     <div style={styles.page}>
       <h1 style={styles.title}>Welcome, {user.name || user.email}</h1>
 

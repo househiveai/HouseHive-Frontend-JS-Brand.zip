@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { apiChat } from "../lib/api";
+import RequireAuth from "../components/RequireAuth";
 
 export default function Messages() {
+  RequireAuth;
   const [input, setInput] = useState("");
   const [log, setLog] = useState([]);
 

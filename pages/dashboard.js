@@ -18,7 +18,10 @@ function DashboardContent() {
   const [insights, setInsights] = useState(null);
 
   
-
+  useEffect(() => {
+      const stored = localStorage.getItem("user");
+      setUser(stored ? JSON.parse(stored) : null);
+    }, [router.pathname]);
 
   return (
     <div style={styles.page}>

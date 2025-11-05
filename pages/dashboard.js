@@ -22,6 +22,9 @@ function DashboardContent() {
       try {
         const u = await apiMe();
         setUser(u);
+
+        const data = await apiGetInsights();
+        setInsights(data);
       } catch {
         router.push("/login");
       }

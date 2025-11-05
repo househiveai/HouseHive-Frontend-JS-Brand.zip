@@ -41,7 +41,7 @@ export default function LoginPage() {
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              minLength={8}
+              
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full p-3 rounded-md border border-gray-400 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"

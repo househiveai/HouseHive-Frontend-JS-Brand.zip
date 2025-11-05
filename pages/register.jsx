@@ -53,7 +53,7 @@ export default function RegisterPage() {
 <input
   type="password"
   placeholder="Password"
-  minLength={8}
+  
   value={password}
   onChange={(e) => setPassword(e.target.value)}
   className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-3"

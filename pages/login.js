@@ -52,6 +52,43 @@ export default function LoginPage() {
   {showPassword ? "Hide Password" : "Show Password"}
 </button>
 
+import { useState } from "react";
+import axios from "axios";
+
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
+
+  const submit = async () => {
+    try {
+      await axios.post("https://househive-backend-v3.onrender.com/api/auth/forgot", { email });
+      setMsg("If that email exists, a reset link has been sent.");
+    } catch {
+      setMsg("Unable to process request.");
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto pt-24 px-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Reset Password</h1>
+      <input
+        type="email"
+        placeholder="Enter your account email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full p-3 rounded-md border bg-white text-black"
+      />
+      <button
+        onClick={submit}
+        className="w-full mt-4 p-3 bg-[#FFB400] text-black font-semibold rounded-md"
+      >
+        Send Reset Link
+      </button>
+      {msg && <p className="mt-3 text-center text-sm text-gray-200">{msg}</p>}
+    </div>
+  );
+}
+
 
           {error && <p style={styles.error}>{error}</p>}
 

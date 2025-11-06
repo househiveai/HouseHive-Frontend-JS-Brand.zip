@@ -55,18 +55,20 @@ export default function PropertiesPage() {
               <h2>Add Property</h2>
               <form onSubmit={handleAddProperty}>
                 <input
-                  style={styles.input}
-                  placeholder="Property Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <input
-                  style={styles.input}
-                  placeholder="Address (optional)"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
+  className="w-full p-3 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
+  placeholder="Property Name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+  required
+/>
+
+<input
+  className="w-full p-3 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
+  placeholder="Address (optional)"
+  value={address}
+  onChange={(e) => setAddress(e.target.value)}
+/>
+
                 <div style={styles.modalActions}>
                   <button type="submit" style={styles.saveButton}>Save</button>
                   <button type="button" style={styles.cancelButton} onClick={() => setShowForm(false)}>Cancel</button>

@@ -16,6 +16,6 @@ a {
 }
 
 button {
-  @apply bg-[#FFB400] text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-[#FFB400] transition;
+  @apply text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-[#FFB400] transition;
 }
 

@@ -12,7 +12,7 @@ export default function NavBar() {
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <Image src="/logo.svg" alt="HouseHive Logo" width={45} height={45} />
+          <Image src="/logo.png" alt="HouseHive Logo" width={45} height={45} />
           <div className="ml-2">
             <h1 className="text-[#FFB400] text-xl font-bold leading-none">HOUSEHIVE.AI</h1>
             <p className="text-xs text-zinc-400 -mt-1">Property management using AI</p>
@@ -36,11 +36,11 @@ export default function NavBar() {
         <div className="sm:hidden flex items-center space-x-4">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-[#FFB400] text-2xl focus:outline-none"
+            className="text-white text-2xl focus:outline-none"
           >
             ☰
           </button>
-          <Image src="/logo.svg" alt="HouseHive Logo" />
+          <Image src="/logo.png" alt="HouseHive Logo" />
           {/* User Menu stays exactly the same */}
           <UserMenu />
         </div>

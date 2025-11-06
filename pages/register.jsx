@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,11 +13,13 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const handleRegister = async (event) => {
+    event.preventDefault();
     if (isSubmitting) return;
+
     setError("");
     setIsSubmitting(true);
+
     try {
       await apiRegister({ name, email, password });
       router.push("/login");
@@ -28,48 +31,71 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <form
         onSubmit={handleRegister}
-        className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
+        className="w-full max-w-md space-y-4 rounded-xl bg-white p-8 shadow-lg"
       >
-        <h1 className="text-2xl font-semibold text-center">Create Account</h1>
-<input
-  type="text"
-  placeholder="Full Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
-/>
+        <h1 className="text-center text-2xl font-semibold text-gray-900">
+          Create Account
+        </h1>
+        <p className="text-center text-sm text-gray-500">
+          Start managing your properties with HouseHive today.
+        </p>
 
-<input
-  type="email"
-  placeholder="Email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-3"
-/>
+        <label className="block text-left text-sm font-medium text-gray-700">
+          Full Name
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 bg-white p-3 text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            autoComplete="name"
+            placeholder="Jane Doe"
+            required
+          />
+        </label>
 
-<input
-  type="password"
-  placeholder="Password"
-  
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-3"
-/>
+        <label className="block text-left text-sm font-medium text-gray-700">
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 bg-white p-3 text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+          />
+        </label>
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <label className="block text-left text-sm font-medium text-gray-700">
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 bg-white p-3 text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            autoComplete="new-password"
+            placeholder="Create a strong password"
+            required
+            minLength={8}
+          />
+        </label>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
         <button
           type="submit"
-          className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-not-allowed text-white font-medium p-2 rounded transition"
+          className="w-full rounded-md bg-yellow-500 p-3 font-semibold text-white transition hover:bg-yellow-600 disabled:cursor-not-allowed disabled:bg-yellow-300"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Signing Up..." : "Sign Up"}
         </button>
-        <p className="text-sm text-center text-gray-500">
+
+        <p className="text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <Link className="text-yellow-600 hover:underline" href="/login">
+          <Link className="font-medium text-yellow-600 hover:underline" href="/login">
             Sign in
           </Link>
         </p>

@@ -1,23 +1,24 @@
 import { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/router";
+import { apiResetPassword } from "../lib/api";
 
 export default function ResetPassword() {
   const router = useRouter();
   const { token } = router.query; 
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
-  const API_BASE = "https://househive-backend-v3.onrender.com";
-
-  const handleReset = async () => {
+  const handleReset = async (event) => {
+    event.preventDefault();
+    if (!token) {
+      alert("Reset link invalid or expired.");
+      return;
+    }
+    if (!password) return;
     try {
-      await axios.post(`${API_BASE}/api/auth/reset`, {
-        token,
-        new_password: password,
-      });
+      await apiResetPassword(token, password);
       setDone(true);
     } catch (err) {
-      alert("Reset link invalid or expired.");
+      alert(err?.message || "Reset link invalid or expired.");
     }
   };
 
@@ -28,20 +29,27 @@ export default function ResetPassword() {
           <>
             <h1 className="text-2xl font-bold text-center mb-6">Set New Password</h1>
 
-            <input
-              type="password"
-              placeholder="New Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-[#FFB400] focus:ring-2"
-            />
+            <form onSubmit={handleReset} className="space-y-4">
+              <label className="block text-left text-sm font-medium text-gray-300">
+                New Password
+                <input
+                  type="password"
+                  placeholder="Enter a new password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"
+                  required
+                  minLength={8}
+                />
+              </label>
 
-            <button
-              onClick={handleReset}
-              className="w-full mt-6 p-3 bg-[#FFB400] text-black font-semibold rounded-md hover:bg-[#d89c00] transition"
-            >
-              Save New Password
-            </button>
+              <button
+                type="submit"
+                className="w-full p-3 bg-[#FFB400] text-black font-semibold rounded-md hover:bg-[#d89c00] transition"
+              >
+                Save New Password
+              </button>
+            </form>
           </>
         ) : (
           <div className="text-center">

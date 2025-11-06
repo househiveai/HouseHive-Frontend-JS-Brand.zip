@@ -1,4 +1,3 @@
-// pages/login.js
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { apiLogin } from "../lib/api";
@@ -15,7 +14,12 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await apiLogin(email, password);
+      const res = await apiLogin(email, password);
+
+      // ✅ Store the token + user
+      localStorage.setItem("token", res.access_token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
       router.push("/dashboard");
     } catch (err) {
       setError("Invalid login, try again.");
@@ -41,7 +45,6 @@ export default function LoginPage() {
             <input
               type={showPassword ? "text" : "password"}
               value={password}
-              
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full p-3 rounded-md border border-gray-400 bg-white text-black focus:ring-2 focus:ring-[#FFB400]"

@@ -14,15 +14,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await apiLogin(email, password);
-
-      // ✅ Store the token + user
-      localStorage.setItem("token", res.access_token);
-      localStorage.setItem("user", JSON.stringify(res.user));
-
+      await apiLogin(email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError("Invalid login, try again.");
+      setError(err?.message || "Invalid login, try again.");
     }
   }
 

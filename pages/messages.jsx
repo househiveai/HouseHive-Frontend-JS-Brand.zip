@@ -12,9 +12,16 @@ export default function Messages() {
     setLog(msgs);
     setInput("");
     try {
-      const res = await apiChat(input);
-      setLog([...msgs, { role: "assistant", content: res.reply }]);
-    } catch {
+      const res = await apiChat(msgs);
+      const reply =
+        res?.reply ||
+        res?.response ||
+        res?.message ||
+        (typeof res === "string" ? res : "HiveBot had no response.");
+
+      setLog([...msgs, { role: "assistant", content: reply }]);
+    } catch (error) {
+      console.error("HiveBot chat error:", error);
       setLog([
         ...msgs,
         { role: "assistant", content: "HiveBot could not connect to the AI API." },

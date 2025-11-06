@@ -1,19 +1,29 @@
 // pages/forgot.js
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE } from "../lib/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submit() {
+    if (isSubmitting) return;
     try {
-      await axios.post("https://househive-backend-v3.onrender.com/api/auth/forgot", {
+      setIsSubmitting(true);
+      await axios.post(`${API_BASE}/auth/forgot`, {
         email,
       });
       setMsg("If that email exists, a reset link has been sent.");
-    } catch {
-      setMsg("Unable to process request.");
+    } catch (error) {
+      const detail =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        "Unable to process request.";
+      setMsg(detail);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -32,9 +42,10 @@ export default function ForgotPassword() {
 
         <button
           onClick={submit}
-          className="w-full mt-4 p-3 bg-[#FFB400] text-black font-semibold rounded-md"
+          disabled={!email || isSubmitting}
+          className="w-full mt-4 p-3 bg-[#FFB400] disabled:bg-[#f6d27f] disabled:text-gray-600 disabled:cursor-not-allowed text-black font-semibold rounded-md"
         >
-          Send Reset Link
+          {isSubmitting ? "Sending..." : "Send Reset Link"}
         </button>
 
         {msg && <p className="mt-3 text-center text-sm text-gray-700">{msg}</p>}

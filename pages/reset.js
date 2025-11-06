@@ -1,23 +1,39 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { API_BASE } from "../lib/api";
 
 export default function ResetPassword() {
   const router = useRouter();
   const { token } = router.query; 
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
-  const API_BASE = "https://househive-backend-v3.onrender.com";
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleReset = async () => {
+    if (isSubmitting) return;
+    if (!token) {
+      setError("Reset link is missing or invalid.");
+      return;
+    }
+
     try {
-      await axios.post(`${API_BASE}/api/auth/reset`, {
+      setError("");
+      setIsSubmitting(true);
+      await axios.post(`${API_BASE}/auth/reset`, {
         token,
         new_password: password,
       });
       setDone(true);
     } catch (err) {
-      alert("Reset link invalid or expired.");
+      const detail =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        "Reset link invalid or expired.";
+      setError(detail);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -34,14 +50,17 @@ export default function ResetPassword() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-3 rounded-md border border-gray-600 bg-white text-black focus:ring-[#FFB400] focus:ring-2"
+              minLength={8}
             />
 
             <button
               onClick={handleReset}
-              className="w-full mt-6 p-3 bg-[#FFB400] text-black font-semibold rounded-md hover:bg-[#d89c00] transition"
+              disabled={!password || isSubmitting}
+              className="w-full mt-6 p-3 bg-[#FFB400] text-black font-semibold rounded-md hover:bg-[#d89c00] transition disabled:bg-[#d5b763] disabled:text-gray-700 disabled:cursor-not-allowed"
             >
-              Save New Password
+              {isSubmitting ? "Saving..." : "Save New Password"}
             </button>
+            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
           </>
         ) : (
           <div className="text-center">

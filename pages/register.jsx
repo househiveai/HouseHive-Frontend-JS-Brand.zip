@@ -34,30 +34,34 @@ export default function RegisterPage() {
         className="bg-white shadow-lg p-6 rounded-xl w-full max-w-sm space-y-4"
       >
         <h1 className="text-2xl font-semibold text-center">Create Account</h1>
-<input
-  type="text"
-  placeholder="Full Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
-/>
 
-<input
-  type="email"
-  placeholder="Email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-3"
-/>
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          required
+        />
 
-<input
-  type="password"
-  placeholder="Password"
-  
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 mt-3"
-/>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded bg-white text-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          minLength={8}
+          required
+        />
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button

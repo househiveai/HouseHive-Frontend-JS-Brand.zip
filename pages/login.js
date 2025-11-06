@@ -8,21 +8,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (isSubmitting) return;
     setError("");
 
     try {
-      const res = await apiLogin(email, password);
-
-      // ✅ Store the token + user
-      localStorage.setItem("token", res.access_token);
-      localStorage.setItem("user", JSON.stringify(res.user));
-
+      setIsSubmitting(true);
+      await apiLogin(email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError("Invalid login, try again.");
+      setError(err?.message || "Invalid login, try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -64,9 +64,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full p-3 bg-[#FFB400] hover:bg-[#e0a000] text-black font-semibold rounded-md"
+            disabled={isSubmitting}
+            className="w-full p-3 bg-[#FFB400] hover:bg-[#e0a000] disabled:bg-[#f6d27f] disabled:text-gray-600 disabled:cursor-not-allowed text-black font-semibold rounded-md"
           >
-            Sign In
+            {isSubmitting ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

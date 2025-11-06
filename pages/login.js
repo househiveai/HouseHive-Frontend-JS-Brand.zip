@@ -16,13 +16,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      setIsSubmitting(true);
       await apiLogin(email, password);
       router.push("/dashboard");
     } catch (err) {
       setError(err?.message || "Invalid login, try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   }
 

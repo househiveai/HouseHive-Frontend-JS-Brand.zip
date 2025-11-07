@@ -1,26 +1,67 @@
 import { useEffect, useState } from "react";
+import RequireAuth from "../components/RequireAuth";
 import { apiAddTask, apiGetTasks, apiGetProperties } from "../lib/api";
 
-export default function Tasks() {
+export default function TasksPage() {
+  return (
+    <RequireAuth>
+      <TasksContent />
+    </RequireAuth>
+  );
+}
+
+function TasksContent() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [propertyId, setPropertyId] = useState("");
   const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const load = async () => {
-    setTasks(await apiGetTasks());
-    setProperties(await apiGetProperties());
+    setError("");
+    setLoading(true);
+    try {
+      const [tasksData, propertiesData] = await Promise.all([
+        apiGetTasks(),
+        apiGetProperties(),
+      ]);
+      setTasks(tasksData);
+      setProperties(propertiesData);
+    } catch (err) {
+      setError(err?.message || "Unable to load tasks.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addTask = async () => {
-    if (!title) return alert("Enter task title");
-    await apiAddTask({ title, description, property_id: propertyId ? Number(propertyId) : null });
-    setTitle(""); setDescription(""); setPropertyId("");
-    await load();
+    if (!title) {
+      alert("Enter task title");
+      return;
+    }
+
+    setError("");
+
+    try {
+      await apiAddTask({
+        title,
+        description,
+        property_id: propertyId ? Number(propertyId) : null,
+      });
+      setTitle("");
+      setDescription("");
+      setPropertyId("");
+      await load();
+    } catch (err) {
+      setError(err?.message || "Unable to add task.");
+    }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   return (
     <div className="p-8 bg-black text-white min-h-screen">
@@ -59,8 +100,16 @@ export default function Tasks() {
         </button>
       </div>
 
+      {error && (
+        <div className="max-w-2xl mb-4 bg-red-900/60 border border-red-500/60 text-red-200 px-4 py-3 rounded-xl">
+          {error}
+        </div>
+      )}
+
       <div className="max-w-2xl">
-        {tasks.length === 0 ? (
+        {loading ? (
+          <p className="text-gray-500">Loading tasks...</p>
+        ) : tasks.length === 0 ? (
           <p className="text-gray-500">No tasks yet.</p>
         ) : (
           tasks.map((t) => (

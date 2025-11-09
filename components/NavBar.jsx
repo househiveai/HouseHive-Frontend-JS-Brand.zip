@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import UserMenu from "./UserMenu";
@@ -19,12 +20,12 @@ export default function NavBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-6 rounded-3xl border border-white/10 bg-white/5 px-5 py-4 text-white shadow-2xl backdrop-blur-xl">
+    <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-white/15 via-white/5 to-white/10 px-5 py-4 text-white shadow-2xl backdrop-blur-2xl">
       <Link href="/" className="flex items-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFB400] to-[#f39c00] text-lg font-semibold text-slate-900 shadow-lg">
-          HH
+        <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/80 p-2 shadow-lg">
+          <Image src="/logo.png" alt="HouseHive" width={40} height={40} priority className="h-full w-full object-contain" />
         </span>
-        <span className="hidden sm:inline-flex flex-col">
+        <span className="hidden sm:flex flex-col leading-tight">
           <span className="text-sm font-medium uppercase tracking-[0.3em] text-[#FFB400]">HouseHive</span>
           <span className="text-base font-semibold text-white">Intelligent Property Hub</span>
         </span>

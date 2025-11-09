@@ -3,8 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAccessToken } from "@/lib/auth";
-import { Dashboard as DashboardAPI } from "@/lib/api";
+import { getAccessToken } from "../lib/auth";
+import { Dashboard as DashboardAPI } from "../lib/api";
+
 
 function StatCard({ label, value }) {
   return (

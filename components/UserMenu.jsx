@@ -100,7 +100,7 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/12 bg-[#04070f]/95 p-5 text-sm text-white shadow-2xl backdrop-blur-xl">
+        <div className="absolute right-0 z-30 mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/12 bg-[#04070f]/95 p-5 text-sm text-white shadow-[0_24px_55px_-32px_rgba(5,8,15,0.9)] backdrop-blur-xl">
           {isAuthenticated ? (
             <>
               <div className="mb-4 flex items-start gap-3">

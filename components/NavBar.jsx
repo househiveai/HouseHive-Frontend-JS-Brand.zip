@@ -20,15 +20,11 @@ export default function NavBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 overflow-hidden rounded-full border border-white/10 bg-[#0C1324]/80 px-6 py-4 text-white shadow-[0_22px_45px_-28px_rgba(14,23,42,0.9)] backdrop-blur-2xl">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),rgba(12,19,36,0.4))] opacity-60"
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-20 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[#FFB400]/25 blur-3xl"
-      />
+    <nav className="relative mx-auto grid w-full max-w-6xl grid-cols-[auto,1fr] items-center gap-4 rounded-full border border-white/10 bg-[#0C1324]/80 px-6 py-4 text-white shadow-[0_22px_45px_-28px_rgba(14,23,42,0.9)] backdrop-blur-2xl lg:grid-cols-[auto,1fr,auto] lg:gap-6">
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+        <span className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),rgba(12,19,36,0.4))] opacity-60" />
+        <span className="absolute -right-20 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full bg-[#FFB400]/25 blur-3xl" />
+      </div>
 
       <Link href="/" className="relative z-10 flex items-center gap-3">
         <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-transparent p-1 shadow-inner">
@@ -47,7 +43,7 @@ export default function NavBar() {
         </span>
       </Link>
 
-      <div className="relative z-10 hidden flex-1 justify-center lg:flex">
+      <div className="relative z-10 hidden w-full items-center justify-center lg:flex lg:justify-self-center">
         <div className="flex flex-wrap items-center justify-center gap-1 xl:gap-2">
           {links.map((item) => {
             const active = router.pathname === item.href;
@@ -68,7 +64,7 @@ export default function NavBar() {
         </div>
       </div>
 
-      <div className="relative z-10 flex flex-shrink-0 items-center gap-4 pl-2">
+      <div className="relative z-10 flex items-center justify-end gap-3 justify-self-end">
         <div className="hidden lg:block">
           <UserMenu />
         </div>

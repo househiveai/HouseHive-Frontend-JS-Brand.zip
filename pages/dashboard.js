@@ -79,7 +79,7 @@ export default function DashboardPage() {
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+    <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a] transition hover:-translate-y-1 hover:scale-105 hover:brightness-110 hover:shadow-[0_12px_24px_rgba(255,255,255,0.1)]">
       <p className="text-gray-400 text-sm">{label}</p>
       <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">{value}</h2>
     </div>

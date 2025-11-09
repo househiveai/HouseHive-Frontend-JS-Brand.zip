@@ -24,7 +24,7 @@ export default function LoginPage() {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white shadow-lg p-8 rounded-xl w-[360px] text-center">
-        <Image src="/logo.png" alt="HouseHive Logo" width={100} height={100} className="mx-auto mb-4" />
+        <image src="/logo.png" alt="HouseHive Logo" width={100} height={100} className="mx-auto mb-4" />
         <h2 className="text-xl font-bold mb-6 text-[#FFB400]">Log in to HouseHive</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">

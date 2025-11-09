@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { getAccessToken } from "@/lib/auth";
 import { api } from "@/lib/api";
 
@@ -50,18 +50,16 @@ export default function DashboardPage() {
       <p className="text-gray-400 mt-1">Your smart co-host overview.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-
         <StatCard label="Properties" value={stats.properties} />
         <StatCard label="Tenants / Guests" value={stats.tenants} />
         <StatCard label="Active Tasks" value={stats.tasks} />
         <StatCard label="Reminders" value={stats.reminders} />
-
       </div>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({ label, value }) {
   return (
     <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
       <p className="text-gray-400 text-sm">{label}</p>

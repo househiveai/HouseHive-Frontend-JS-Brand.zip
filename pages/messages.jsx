@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { apiChat } from "../lib/api";
+import { apiChat, apiDraftMessage } from "../lib/api";
 import RequireAuth from "../components/RequireAuth";
 
 export default function Messages() {
@@ -68,7 +68,7 @@ export default function Messages() {
           )}
         </div>
 
-        {/* Input */}
+        {/* Input & Buttons */}
         <div className="w-full max-w-3xl mt-4 flex gap-3">
           <textarea
             rows={2}
@@ -77,16 +77,26 @@ export default function Messages() {
             onChange={(e) => setInput(e.target.value)}
             className="flex-1 bg-zinc-800 text-white rounded-lg p-3 border border-zinc-700"
           />
-        <button
-  onClick={async () => {
-    const res = await apiDraftMessage("Tenant", input);
-    setInput(res.draft);
-  }}
-  className="ml-3 bg-zinc-700 border border-yellow-400 px-4 py-2 rounded hover:bg-zinc-600"
->
-  Auto-Draft
-</button>
 
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={send}
+              className="bg-yellow-400 text-black px-5 py-2 rounded font-semibold hover:opacity-90"
+            >
+              Send
+            </button>
+
+            <button
+              onClick={async () => {
+                if (!input.trim()) return;
+                const res = await apiDraftMessage("Tenant", input.trim());
+                setInput(res.draft);
+              }}
+              className="bg-zinc-700 border border-yellow-400 px-5 py-2 rounded hover:bg-zinc-600"
+            >
+              Auto-Draft
+            </button>
+          </div>
         </div>
       </div>
     </RequireAuth>

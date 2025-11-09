@@ -6,21 +6,30 @@ export default function Messages() {
   const [input, setInput] = useState("");
   const [log, setLog] = useState([]);
 
-  const send = async () => {
-    if (!input) return;
-    const msgs = [...log, { role: "user", content: input }];
-    setLog(msgs);
-    setInput("");
-    try {
-      const res = await apiChat(input);
-      setLog([...msgs, { role: "assistant", content: res.reply }]);
-    } catch {
-      setLog([
-        ...msgs,
-        { role: "assistant", content: "HiveBot could not connect to the AI API." },
-      ]);
-    }
-  };
+ const send = async () => {
+  if (!input) return;
+
+  // Add your message at the TOP
+  setLog((prev) => [{ role: "user", content: input }, ...prev]);
+  const messageToSend = input;
+  setInput("");
+
+  try {
+    const res = await apiChat(messageToSend);
+
+    // Add assistant response at the TOP
+    setLog((prev) => [
+      { role: "assistant", content: res.reply },
+      ...prev,
+    ]);
+  } catch {
+    setLog((prev) => [
+      { role: "assistant", content: "HiveBot could not connect to the AI API." },
+      ...prev,
+    ]);
+  }
+};
+
 
   return (
     <RequireAuth>

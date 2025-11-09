@@ -2,20 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* HOUSEHIVE.AI Theme */
+/* HOUSEHIVE.AI Aurora Theme */
 body {
-  @apply bg-white text-black font-sans antialiased;
-}
-
-h1, h2, h3, h4, h5 {
-  @apply text-[#FFB400] font-bold;
+  @apply bg-slate-950 text-slate-50 font-sans antialiased;
 }
 
 a {
-  @apply text-[#FFB400] hover:underline;
+  @apply text-[#FFB400] transition hover:text-[#f39c00];
 }
 
 button {
-  @apply text-black font-semibold rounded-lg px-4 py-2 hover:bg-black hover:text-[#FFB400] transition;
+  @apply transition;
+}
+
+::selection {
+  background: rgba(255, 180, 0, 0.35);
+  color: #0f172a;
 }
 

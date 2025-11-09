@@ -1,66 +1,95 @@
+import Link from "next/link";
+
 export default function Maintenance() {
   return (
-    <div className="min-h-screen bg-black text-white px-6 py-12">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-yellow-400 mb-6">
-          Maintenance Tracker
-        </h1>
-        <p className="text-zinc-400 mb-8">
-          Track, assign, and update all property maintenance requests in one place.
+    <section className="space-y-8">
+      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Maintenance HQ</p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Coordinated upkeep made elegant</h1>
+        <p className="mt-3 max-w-2xl text-sm text-slate-200">
+          Triage requests, assign vendors, and keep residents informed — all within a modern interface that mirrors your new auth experience.
         </p>
+      </header>
 
-        {/* Active Requests Section */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-10">
-          <h2 className="text-2xl font-semibold text-yellow-400 mb-4">
-            Active Requests
-          </h2>
-          <ul className="space-y-4">
-            <li className="border border-zinc-800 rounded-xl p-4 flex justify-between items-center hover:bg-zinc-800 transition">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+          <h2 className="text-lg font-semibold text-white">Active requests</h2>
+          <p className="mt-1 text-sm text-slate-200">High-priority items surfaced automatically by HiveBot.</p>
+          <ul className="mt-6 space-y-4 text-sm text-slate-200">
+            <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
               <div>
-                <h3 className="font-semibold">Leaking faucet in Unit 203</h3>
-                <p className="text-zinc-500 text-sm">Reported 2 days ago</p>
+                <p className="font-semibold text-white">Leaking faucet in Unit 203</p>
+                <p className="text-xs text-slate-400">Reported 2 days ago</p>
               </div>
-              <span className="bg-yellow-500 text-black px-3 py-1 rounded text-sm font-semibold">
-                In Progress
+              <span className="rounded-full bg-[#FFB400]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
+                In progress
               </span>
             </li>
-            <li className="border border-zinc-800 rounded-xl p-4 flex justify-between items-center hover:bg-zinc-800 transition">
+            <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
               <div>
-                <h3 className="font-semibold">AC not cooling - Unit 104</h3>
-                <p className="text-zinc-500 text-sm">Reported 1 week ago</p>
+                <p className="font-semibold text-white">HVAC not cooling — Townhome 104</p>
+                <p className="text-xs text-slate-400">Technician scheduled today</p>
               </div>
-              <span className="bg-green-500 text-black px-3 py-1 rounded text-sm font-semibold">
-                Completed
+              <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200">
+                Resolved
+              </span>
+            </li>
+            <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div>
+                <p className="font-semibold text-white">Lobby lighting retrofit</p>
+                <p className="text-xs text-slate-400">Awaiting vendor confirmation</p>
+              </div>
+              <span className="rounded-full bg-sky-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">
+                Scheduled
               </span>
             </li>
           </ul>
-        </div>
+        </section>
 
-        {/* Add Maintenance Task */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-          <h2 className="text-2xl font-semibold text-yellow-400 mb-4">
-            Add Maintenance Request
-          </h2>
-          <form className="space-y-4">
-            <input
-              type="text"
-              placeholder="Task title"
-              className="w-full bg-zinc-800 p-3 rounded-xl border border-zinc-700 text-white focus:outline-none focus:border-yellow-400"
-            />
-            <textarea
-              placeholder="Describe the issue..."
-              rows="4"
-              className="w-full bg-zinc-800 p-3 rounded-xl border border-zinc-700 text-white focus:outline-none focus:border-yellow-400"
-            ></textarea>
-            <button
-              type="button"
-              className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3 px-6 rounded-xl"
+        <section className="space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+            <h2 className="text-lg font-semibold text-white">Log a request</h2>
+            <p className="mt-1 text-sm text-slate-200">Collect all the context your vendors need to respond quickly.</p>
+            <form className="mt-6 space-y-4">
+              <input
+                type="text"
+                placeholder="Task title"
+                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+              />
+              <textarea
+                placeholder="Describe the issue…"
+                rows={4}
+                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+              />
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                <button
+                  type="button"
+                  className="rounded-2xl bg-[#FFB400] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+                >
+                  Submit request
+                </button>
+                <span>or</span>
+                <Link href="/messages" className="font-semibold text-[#FFB400] hover:text-[#f39c00]">
+                  Ask HiveBot to notify the tenant
+                </Link>
+              </div>
+            </form>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-[#FFB400]/10 p-6 text-sm text-slate-900 shadow-xl sm:p-8">
+            <h2 className="text-lg font-semibold text-slate-900">Automation spotlight</h2>
+            <p className="mt-2 text-sm text-slate-800">
+              Auto-create maintenance reminders after every resolved ticket to ensure follow-up surveys and inspection photos are captured.
+            </p>
+            <Link
+              href="/reminders"
+              className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:bg-slate-800"
             >
-              Submit Request
-            </button>
-          </form>
-        </div>
+              Manage reminders
+            </Link>
+          </div>
+        </section>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,11 +1,26 @@
 import { useEffect, useState } from "react";
 import { apiMe, apiCreateCheckout, apiBillingPortal } from "../lib/api";
 
+const PLANS = {
+  cohost: {
+    price: "$19.99 / mo",
+    blurb: "Perfect for part-time hosts managing 1–3 properties.",
+  },
+  pro: {
+    price: "$29.99 / mo",
+    blurb: "Built for professional landlords scaling a modern portfolio.",
+  },
+  agency: {
+    price: "$99.99 / mo",
+    blurb: "For co-hosting teams who need advanced automations and reporting.",
+  },
+};
+
 export default function Billing() {
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState("");
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("cohost");
 
   useEffect(() => {
     apiMe().then(setUser).catch(() => setUser(null));
@@ -17,7 +32,7 @@ export default function Billing() {
   };
 
   const startCheckout = async () => {
-    setStatus("Redirecting to Stripe...");
+    setStatus("Redirecting to Stripe…");
     try {
       const data = await apiCreateCheckout(selectedPlan);
       window.location.href = data.url;
@@ -27,7 +42,7 @@ export default function Billing() {
   };
 
   const openPortal = async () => {
-    setStatus("Opening portal...");
+    setStatus("Opening portal…");
     try {
       const data = await apiBillingPortal();
       window.location.href = data.url;
@@ -37,81 +52,92 @@ export default function Billing() {
   };
 
   return (
-    <div className="p-8 bg-black text-white min-h-screen flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">
-        Billing & Subscription
-      </h1>
+    <section className="space-y-10">
+      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Billing & plans</p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Choose the HouseHive tier that fits</h1>
+        <p className="mt-3 max-w-2xl text-sm text-slate-200">
+          Update subscription details, access invoices, and manage your Stripe portal without leaving this modern workspace.
+        </p>
+        {user && (
+          <div className="mt-6 inline-flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-xs uppercase tracking-[0.3em] text-slate-300">
+            <span>Signed in as {user.email}</span>
+            {user.plan && (
+              <span className="rounded-full bg-[#FFB400]/20 px-3 py-1 text-[#FFB400]">Current plan: {user.plan}</span>
+            )}
+          </div>
+        )}
+      </header>
 
-      {user && (
-        <div className="text-zinc-400 mb-6">
-          Logged in as:{" "}
-          <span className="text-yellow-400">{user.email}</span> — Plan:{" "}
-          <span className="text-yellow-400 font-semibold">{user.plan}</span>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {["cohost", "pro", "agency"].map((plan) => (
+      <div className="grid gap-6 lg:grid-cols-3">
+        {Object.entries(PLANS).map(([plan, info]) => (
           <div
             key={plan}
-            className="bg-zinc-900 p-6 rounded-xl border border-zinc-700 text-center"
+            className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-xl backdrop-blur-xl"
           >
-            <h2 className="text-2xl font-bold text-yellow-400 capitalize mb-2">
-              {plan}
-            </h2>
-            <p className="text-zinc-400 mb-4">
-              {plan === "cohost" && "$19.99 / mo"}
-              {plan === "pro" && "$29.99 / mo"}
-              {plan === "agency" && "$99.99 / mo"}
-            </p>
-            <button
-              onClick={() => openPopup(plan)}
-              className="bg-yellow-400 text-black px-5 py-2 rounded font-semibold hover:opacity-90"
-            >
-              View Details
-            </button>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FFB400]/10 to-transparent" aria-hidden />
+            <div className="relative flex h-full flex-col">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{plan}</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white capitalize">{plan}</h2>
+              <p className="mt-2 text-sm text-slate-200">{info.price}</p>
+              <p className="mt-4 flex-1 text-sm text-slate-200">{info.blurb}</p>
+              <button
+                onClick={() => openPopup(plan)}
+                className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+              >
+                View details
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      <button
-        onClick={openPortal}
-        className="mt-8 border border-yellow-400 text-yellow-400 px-6 py-2 rounded hover:bg-yellow-400 hover:text-black transition"
-      >
-        Manage Subscription
-      </button>
-
-      {status && <p className="mt-4 text-zinc-400">{status}</p>}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-xl backdrop-blur-xl sm:p-8">
+        <h2 className="text-lg font-semibold">Manage subscription</h2>
+        <p className="mt-1 text-sm text-slate-200">Access invoices, update payment methods, or cancel anytime.</p>
+        <button
+          onClick={openPortal}
+          className="mt-4 inline-flex items-center justify-center rounded-2xl border border-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:bg-[#FFB400] hover:text-slate-900"
+        >
+          Open customer portal
+        </button>
+        {status && <p className="mt-4 text-sm text-slate-300">{status}</p>}
+      </div>
 
       {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-zinc-900 p-8 rounded-xl border border-yellow-400 max-w-lg w-full text-center">
-            <h2 className="text-3xl font-bold text-yellow-400 mb-3 capitalize">
-              {selectedPlan} Plan
-            </h2>
-            <p className="text-zinc-300 mb-4">
-              {selectedPlan === "cohost" &&
-                "Perfect for part-time hosts managing 1–3 properties."}
-              {selectedPlan === "pro" &&
-                "For professional landlords managing multiple properties."}
-              {selectedPlan === "agency" &&
-                "For property managers and co-hosting agencies with full AI automation."}
-            </p>
-            <button
-              onClick={startCheckout}
-              className="bg-yellow-400 text-black px-6 py-3 rounded font-semibold hover:opacity-90 mr-4"
-            >
-              Subscribe
-            </button>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="border border-yellow-400 text-yellow-400 px-6 py-3 rounded hover:bg-yellow-400 hover:text-black"
-            >
-              Cancel
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4">
+          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white/10 p-8 text-white shadow-2xl backdrop-blur-2xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-3xl font-semibold capitalize">{selectedPlan} plan</h2>
+                <p className="mt-1 text-sm text-slate-200">{PLANS[selectedPlan].blurb}</p>
+                <p className="mt-2 text-sm text-[#FFB400]">{PLANS[selectedPlan].price}</p>
+              </div>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-white transition hover:text-[#FFB400]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                onClick={startCheckout}
+                className="rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+              >
+                Subscribe now
+              </button>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:border-[#FFB400] hover:text-[#FFB400]"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -1,66 +1,91 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RequireAuth from "../components/RequireAuth";
-import { apiGetProperties, apiGetInsights } from "../lib/api";
+import { useRouter } from "next/navigation";
+import { getAccessToken } from "@/lib/auth";
+import { api } from "@/lib/api";
 
-export default function Dashboard() {
+export default function DashboardPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [insights, setInsights] = useState(null);
-  const [properties, setProperties] = useState([]);
+  const [stats, setStats] = useState({
+    properties: 0,
+    tenants: 0,
+    tasks: 0,
+    reminders: 0,
+  });
 
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await apiGetInsights();
-        setInsights(data);
+    const token = getAccessToken();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
-        const props = await apiGetProperties();
-        setProperties(props || []);
-      } catch (err) {
-        console.error(err);
+    async function fetchStats() {
+      try {
+        const data = await api("/dashboard/summary", token);
+        setStats(data);
+      } catch (error) {
+        console.error("Dashboard load failed", error);
       } finally {
         setLoading(false);
       }
     }
-    load();
-  }, []);
+
+    fetchStats();
+  }, [router]);
 
   if (loading) {
     return (
-      <RequireAuth>
-        <div className="flex items-center justify-center min-h-screen text-yellow-400 text-xl">
-          Loading Dashboard…
-        </div>
-      </RequireAuth>
+      <div className="flex items-center justify-center h-screen bg-[#111111] text-white">
+        Loading dashboard...
+      </div>
     );
   }
 
   return (
-    <RequireAuth>
-      <div className="p-8 min-h-screen bg-black text-white">
-        <h1 className="text-4xl font-bold text-yellow-400 mb-6">Dashboard</h1>
+    <div className="min-h-screen bg-[#111111] text-white px-8 py-10">
+      <h1 className="text-3xl font-semibold">Dashboard</h1>
+      <p className="text-gray-400 mt-1">
+        Your smart co-host overview.
+      </p>
 
-        {insights && (
-          <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-xl mb-6 max-w-3xl">
-            <p>{insights.summary}</p>
-          </div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
 
-        <h2 className="text-2xl font-semibold mb-3 text-yellow-300">Your Properties</h2>
-        <div className="space-y-3 max-w-3xl">
-          {properties.map((p) => (
-            <div key={p.id} className="p-4 bg-zinc-900 border border-zinc-700 rounded-lg">
-              <div className="font-bold text-yellow-400">{p.name}</div>
-              <div className="text-zinc-400">{p.address || "No address provided"}</div>
-            </div>
-          ))}
-
-          {properties.length === 0 && (
-            <div className="text-zinc-400 italic">No properties yet.</div>
-          )}
+        {/* Properties */}
+        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+          <p className="text-gray-400 text-sm">Properties</p>
+          <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">
+            {stats.properties}
+          </h2>
         </div>
+
+        {/* Tenants */}
+        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+          <p className="text-gray-400 text-sm">Tenants / Guests</p>
+          <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">
+            {stats.tenants}
+          </h2>
+        </div>
+
+        {/* Tasks */}
+        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+          <p className="text-gray-400 text-sm">Active Tasks</p>
+          <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">
+            {stats.tasks}
+          </h2>
+        </div>
+
+        {/* Reminders */}
+        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+          <p className="text-gray-400 text-sm">Reminders</p>
+          <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">
+            {stats.reminders}
+          </h2>
+        </div>
+
       </div>
-    </RequireAuth>
+    </div>
   );
 }

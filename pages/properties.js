@@ -1,128 +1,177 @@
-// pages/properties.js
 import { useEffect, useState } from "react";
-import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
 import RequireAuth from "../components/RequireAuth";
+import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
 
 export default function PropertiesPage() {
+  return (
+    <RequireAuth>
+      <PropertiesContent />
+    </RequireAuth>
+  );
+}
+
+function PropertiesContent() {
   const [user, setUser] = useState(null);
   const [properties, setProperties] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       try {
-        const u = await apiMe();
-        setUser(u);
-
-        const props = await apiGetProperties();
-        setProperties(props);
+        const [me, props] = await Promise.all([apiMe(), apiGetProperties()]);
+        setUser(me);
+        setProperties(Array.isArray(props) ? props : props?.results ?? []);
       } catch (err) {
-        console.log("Auth failed:", err);
+        setError(err?.message || "Unable to load properties.");
+      } finally {
+        setLoading(false);
       }
     }
     load();
   }, []);
 
-  async function handleAddProperty(e) {
-    e.preventDefault();
+  async function handleAddProperty(event) {
+    event.preventDefault();
+    setError("");
     try {
-      const newProp = await apiAddProperty({ name, address });
-      setProperties([newProp, ...properties]);
+      const payload = { name, address: address || null };
+      const created = await apiAddProperty(payload);
+      setProperties((prev) => [created, ...prev]);
       setShowForm(false);
       setName("");
       setAddress("");
     } catch (err) {
-      alert(err.message);
+      setError(err?.message || "Unable to add property. Please try again.");
     }
   }
 
-  if (!user) return <div style={styles.loading}>Loading...</div>;
+  if (loading) {
+    return (
+      <section className="flex min-h-[50vh] items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-16 text-sm text-slate-200 shadow-xl backdrop-blur-xl">
+        Loading your portfolio...
+      </section>
+    );
+  }
 
   return (
-    <RequireAuth>
-      <div style={styles.page}>
-        <h1 style={styles.title}>Your Properties</h1>
-
-        <button style={styles.addButton} onClick={() => setShowForm(true)}>
-          + Add Property
-        </button>
-
-        {showForm && (
-          <div style={styles.modalOverlay}>
-            <div style={styles.modal}>
-              <h2>Add Property</h2>
-              <form onSubmit={handleAddProperty}>
-                <input
-  className="w-full p-3 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
-  placeholder="Property Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  required
-/>
-
-<input
-  className="w-full p-3 border rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#FFB400]"
-  placeholder="Address (optional)"
-  value={address}
-  onChange={(e) => setAddress(e.target.value)}
-/>
-
-                <div style={styles.modalActions}>
-                  <button type="submit" style={styles.saveButton}>Save</button>
-                  <button type="button" style={styles.cancelButton} onClick={() => setShowForm(false)}>Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
+    <section className="space-y-8">
+      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Property library</p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Your managed spaces</h1>
+        <p className="mt-3 max-w-2xl text-sm text-slate-200">
+          Keep every building, unit, and short-stay suite organized with notes, photos, and automation-ready metadata.
+        </p>
+        {user && (
+          <p className="mt-4 text-xs uppercase tracking-[0.3em] text-slate-300">
+            Managing for {user.name || user.email}
+          </p>
         )}
+        <button
+          type="button"
+          onClick={() => setShowForm(true)}
+          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[#FFB400] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+        >
+          + Add property
+        </button>
+      </header>
 
-        <div style={styles.list}>
-          {properties.length === 0 ? (
-            <p>No properties yet.</p>
-          ) : (
-            properties.map((p) => (
-              <div key={p.id} style={styles.item}>
-                <strong>{p.name}</strong>
-                <div>{p.address}</div>
+      {error && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>
+      )}
+
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {properties.length === 0 ? (
+          <div className="col-span-full rounded-3xl border border-dashed border-white/20 bg-white/5 p-12 text-center text-sm text-slate-300">
+            No properties yet. Add your first listing to unlock smart automations.
+          </div>
+        ) : (
+          properties.map((property) => (
+            <article
+              key={property.id}
+              className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-xl backdrop-blur-xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" aria-hidden />
+              <div className="relative">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{property.type || "Property"}</p>
+                <h2 className="mt-3 text-xl font-semibold text-white">{property.name}</h2>
+                {property.address && <p className="mt-2 text-sm text-slate-200">{property.address}</p>}
+                <div className="mt-6 flex items-center justify-between text-xs text-slate-300">
+                  <span>ID: {property.id}</span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-[#FFB400]">
+                    Active
+                  </span>
+                </div>
               </div>
-            ))
-          )}
-        </div>
+            </article>
+          ))
+        )}
       </div>
-    </RequireAuth>
+
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4">
+          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white/10 p-8 text-white shadow-2xl backdrop-blur-2xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold">Add new property</h2>
+                <p className="mt-1 text-sm text-slate-200">Document a new unit to start automating tasks and billing.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-white transition hover:text-[#FFB400]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProperty} className="mt-6 space-y-5">
+              <label className="block text-sm font-medium text-slate-200">
+                Property name
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                  placeholder="e.g. Oakwood Residence"
+                  required
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-slate-200">
+                Address (optional)
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                  placeholder="123 Market Street"
+                />
+              </label>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="rounded-2xl border border-white/20 bg-white/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:border-[#FFB400] hover:text-[#FFB400]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-[#FFB400] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+                >
+                  Save property
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
-
-const styles = {
-  page: { padding: "40px" },
-  title: { marginBottom: "20px", color: "#D4A018" },
-  addButton: {
-    padding: "10px 15px",
-    background: "#D4A018",
-    color: "white",
-    borderRadius: "6px",
-    border: "none",
-    cursor: "pointer",
-    marginBottom: "20px",
-  },
-  list: { marginTop: "20px" },
-  item: {
-    padding: "15px",
-    border: "1px solid #eee",
-    borderRadius: "8px",
-    marginBottom: "10px",
-    background: "#fff",
-  },
-  loading: { padding: "50px", textAlign: "center" },
-  modalOverlay: {
-    position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
-    display: "flex", justifyContent: "center", alignItems: "center",
-  },
-  modal: { background: "#fff", padding: "25px", borderRadius: "10px", width: "350px" },
-  input: { width: "100%", padding: "10px", marginBottom: "10px", borderRadius: "6px", border: "1px solid #ccc" },
-  modalActions: { display: "flex", justifyContent: "space-between" },
-  saveButton: { background: "#2c7", padding: "10px 15px", border: "none", borderRadius: "6px", cursor: "pointer", color: "#fff" },
-  cancelButton: { background: "#999", padding: "10px 15px", border: "none", borderRadius: "6px", cursor: "pointer", color: "#fff" },
-};

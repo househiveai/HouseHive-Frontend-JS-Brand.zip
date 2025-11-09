@@ -22,7 +22,7 @@ function RemindersContent() {
     setLoading(true);
     try {
       const reminderList = await apiGetReminders();
-      setReminders(reminderList);
+      setReminders(Array.isArray(reminderList) ? reminderList : reminderList?.results ?? []);
     } catch (err) {
       setError(err?.message || "Unable to load reminders.");
     } finally {
@@ -32,7 +32,7 @@ function RemindersContent() {
 
   const addReminder = async () => {
     if (!title) {
-      alert("Enter a reminder title");
+      setError("Enter a reminder title");
       return;
     }
 
@@ -53,56 +53,75 @@ function RemindersContent() {
   }, []);
 
   return (
-    <div className="p-8 bg-black text-white min-h-screen">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">Reminders</h1>
-
-      <div className="bg-zinc-900 p-6 rounded-xl border border-yellow-400 mb-6 max-w-2xl">
-        <h2 className="text-lg text-yellow-300 mb-2">Add New Reminder</h2>
-        <input
-          placeholder="Reminder Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-zinc-800 text-white rounded p-2 mb-2"
-        />
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="w-full bg-zinc-800 text-white rounded p-2 mb-3"
-        />
-        <button
-          onClick={addReminder}
-          className="bg-yellow-400 text-black px-4 py-2 rounded font-semibold hover:opacity-90"
-        >
-          Add Reminder
-        </button>
-      </div>
+    <section className="space-y-8">
+      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Operational nudges</p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">HouseHive reminders</h1>
+        <p className="mt-3 max-w-2xl text-sm text-slate-200">
+          Schedule renewals, inspections, and follow-ups with the same glassmorphic polish as your authentication experience.
+        </p>
+      </header>
 
       {error && (
-        <div className="max-w-2xl mb-4 bg-red-900/60 border border-red-500/60 text-red-200 px-4 py-3 rounded-xl">
-          {error}
-        </div>
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>
       )}
 
-      <div className="max-w-2xl">
-        {loading ? (
-          <p className="text-gray-500">Loading reminders...</p>
-        ) : reminders.length === 0 ? (
-          <p className="text-gray-500">No reminders yet.</p>
-        ) : (
-          reminders.map((r) => (
-            <div
-              key={r.id}
-              className="p-4 mb-3 bg-zinc-900 border border-zinc-700 rounded-xl"
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+          <h2 className="text-lg font-semibold text-white">Add new reminder</h2>
+          <p className="mt-1 text-sm text-slate-200">Keep your team on track with perfectly timed nudges.</p>
+
+          <div className="mt-6 space-y-4">
+            <input
+              placeholder="Reminder title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+            />
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+            />
+            <button
+              onClick={addReminder}
+              className="rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
             >
-              <div className="font-semibold text-yellow-300">{r.title}</div>
-              <div className="text-gray-400 text-sm">
-                {r.due_date ? new Date(r.due_date).toLocaleDateString() : "No date set"}
+              Add reminder
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-xl backdrop-blur-xl sm:p-8">
+          <h2 className="text-lg font-semibold">Upcoming reminders</h2>
+          <p className="mt-1 text-sm text-slate-200">HiveBot syncs these into dashboards and sends gentle nudges.</p>
+
+          <div className="mt-6 space-y-4">
+            {loading ? (
+              <p className="text-sm text-slate-300">Loading reminders...</p>
+            ) : reminders.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-6 text-sm text-slate-300">
+                No reminders yet. Create one to keep everyone aligned.
               </div>
-            </div>
-          ))
-        )}
+            ) : (
+              reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200"
+                >
+                  <p className="text-white">{reminder.title}</p>
+                  <p className="text-xs text-slate-400">
+                    {reminder.due_date
+                      ? new Date(reminder.due_date).toLocaleDateString()
+                      : "No due date set"}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
-    </div>
+    </section>
   );
 }

@@ -19,22 +19,19 @@ export default function NavBar() {
           </div>
         </Link>
 
-   {/* Desktop Navigation */}
+{/* Desktop Navigation */}
 <div className="hidden sm:flex items-center space-x-5 text-[#FFB400] text-sm font-medium">
-  <Link href="/dashboard">Dashboard</Link>
-
-  {/* NEW LANDLORD HUB PAGE */}
+  <Link href="/dashboard">Dashboard</Link> 
   <Link href="/landlord">Landlord</Link>
-
   <Link href="/properties">Properties</Link>
   <Link href="/maintenance">Maintenance</Link>
   <Link href="/tenants">Tenants</Link>
   <Link href="/reminders">Reminders</Link>
   <Link href="/messages">Messages</Link>
   <Link href="/billing">Billing</Link>
-
-  <UserMenu />
 </div>
+
+
 
 
         {/* Mobile Icons (Hamburger + User Menu) */}

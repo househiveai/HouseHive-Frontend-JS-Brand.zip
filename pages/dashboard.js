@@ -1,20 +1,9 @@
-// /pages/dashboard.js
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAccessToken } from "../lib/auth";
-import { Dashboard as DashboardAPI } from "../lib/api";
-
-
-function StatCard({ label, value }) {
-  return (
-    <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
-      <p className="text-gray-400 text-sm">{label}</p>
-      <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">{value}</h2>
-    </div>
-  );
-}
+import { getAccessToken } from "@/lib/auth";
+import { apiDashboardSummary } from "@/lib/api";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,8 +13,6 @@ export default function DashboardPage() {
     tenants: 0,
     tasks: 0,
     reminders: 0,
-    occupancy_rate: 0,
-    monthly_income: 0,
   });
 
   useEffect(() => {
@@ -34,12 +21,10 @@ export default function DashboardPage() {
       router.push("/login");
       return;
     }
-
     (async () => {
       try {
-        const data = await DashboardAPI.summary();
-        // Expecting: {properties, tenants, tasks, reminders, occupancy_rate, monthly_income}
-        setStats((s) => ({ ...s, ...(data || {}) }));
+        const data = await apiDashboardSummary();
+        if (data) setStats(data);
       } catch (e) {
         console.error("Dashboard load failed", e);
       } finally {
@@ -67,24 +52,16 @@ export default function DashboardPage() {
         <StatCard label="Active Tasks" value={stats.tasks} />
         <StatCard label="Reminders" value={stats.reminders} />
       </div>
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
-          <p className="text-gray-400 text-sm">Occupancy Rate</p>
-          <h2 className="text-3xl font-bold mt-1">{Math.round(stats.occupancy_rate || 0)}%</h2>
-          <p className="text-gray-500 text-sm mt-2">
-            Target 95%+. Track lease expirations to keep units filled.
-          </p>
-        </div>
-
-        <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
-          <p className="text-gray-400 text-sm">Projected Monthly Income</p>
-          <h2 className="text-3xl font-bold mt-1">${Number(stats.monthly_income || 0).toLocaleString()}</h2>
-          <p className="text-gray-500 text-sm mt-2">
-            Includes scheduled rent + booked stays. Excludes future maintenance costs.
-          </p>
-        </div>
-      </div>
+function StatCard(props) {
+  const { label, value } = props;
+  return (
+    <div className="bg-[#1a1a1a] rounded-xl p-6 border border-[#2a2a2a]">
+      <p className="text-gray-400 text-sm">{label}</p>
+      <h2 className="text-4xl font-bold mt-1 text-[#FFB400]">{value}</h2>
     </div>
   );
 }

@@ -1,21 +1,33 @@
-// /lib/auth.js
-export const isBrowser = typeof window !== "undefined";
+// Lightweight client-side auth helpers
+const isBrowser = typeof window !== "undefined";
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
 
 export function getAccessToken() {
   if (!isBrowser) return null;
-  return localStorage.getItem("token");
+  return window.localStorage.getItem(TOKEN_KEY);
 }
 
 export function setAccessToken(token) {
   if (!isBrowser) return;
-  if (token) localStorage.setItem("token", token);
-  else localStorage.removeItem("token");
+  if (token) window.localStorage.setItem(TOKEN_KEY, token);
+  else window.localStorage.removeItem(TOKEN_KEY);
+}
+
+export function getUser() {
+  if (!isBrowser) return null;
+  try {
+    const raw = window.localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function setUser(user) {
   if (!isBrowser) return;
-  if (user) localStorage.setItem("user", JSON.stringify(user));
-  else localStorage.removeItem("user");
+  if (user) window.localStorage.setItem(USER_KEY, JSON.stringify(user));
+  else window.localStorage.removeItem(USER_KEY);
 }
 
 export function clearSession() {

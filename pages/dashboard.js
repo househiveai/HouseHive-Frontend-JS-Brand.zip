@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getAccessToken } from "@/lib/auth";
-import { api } from "@/lib/api";
+import { getAccessToken } from "../lib/auth";
+import { api } from "../lib/api";
+
 
 export default function DashboardPage() {
   const router = useRouter();

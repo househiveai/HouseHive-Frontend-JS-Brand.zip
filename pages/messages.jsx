@@ -77,12 +77,16 @@ export default function Messages() {
             onChange={(e) => setInput(e.target.value)}
             className="flex-1 bg-zinc-800 text-white rounded-lg p-3 border border-zinc-700"
           />
-          <button
-            onClick={send}
-            className="bg-yellow-400 text-black px-6 rounded-lg font-semibold hover:opacity-90"
-          >
-            Send
-          </button>
+        <button
+  onClick={async () => {
+    const res = await apiDraftMessage("Tenant", input);
+    setInput(res.draft);
+  }}
+  className="ml-3 bg-zinc-700 border border-yellow-400 px-4 py-2 rounded hover:bg-zinc-600"
+>
+  Auto-Draft
+</button>
+
         </div>
       </div>
     </RequireAuth>

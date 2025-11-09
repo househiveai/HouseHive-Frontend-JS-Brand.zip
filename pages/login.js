@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { apiLogin } from "../lib/api";
+import { Auth } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await apiLogin(email, password);
+      await Auth.login(email, password);
       router.push("/dashboard");
     } catch (err) {
       setError(err?.message || "Invalid login, try again.");

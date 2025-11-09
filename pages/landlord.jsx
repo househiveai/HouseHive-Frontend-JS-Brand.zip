@@ -3,10 +3,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAccessToken } from "@/lib/auth";
+import { getAccessToken } from "../lib/auth";
 import {
   Properties, Tenants, Leases, Tasks, Finance, AI,
-} from "@/lib/api";
+} from "../lib/api";
+
 
 const tabs = [
   "Overview",

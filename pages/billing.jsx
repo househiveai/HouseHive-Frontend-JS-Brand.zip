@@ -3,21 +3,22 @@ import { apiMe, apiCreateCheckout, apiBillingPortal } from "../lib/api";
 
 const PLANS = {
   cohost: {
-    price: "$19.99 / mo",
+    priceLabel: "$19.99 / mo",
     blurb: "Perfect for part-time hosts managing 1–3 properties.",
-    id: "price_1SRxcvLIwGlwBzO6ZjGZA0pv",
+    priceId: "price_1SRxcvLIwGlwBzO6ZjGZA0pv", // <— replace with your real Stripe Price ID
   },
   pro: {
-    price: "$29.99 / mo",
+    priceLabel: "$29.99 / mo",
     blurb: "Built for professional landlords scaling a modern portfolio.",
-    id: "price_1SNwkMLIwGlwBzO6snGiqUdA",
+    priceId: "price_1SNwkMLIwGlwBzO6snGiqUdA", // <— replace
   },
   agency: {
-    price: "$99.99 / mo",
+    priceLabel: "$99.99 / mo",
     blurb: "For co-hosting teams who need advanced automations and reporting.",
-    id: "price_1SNwlGLIwGlwBzO64zfSxvcS",
+    priceId: "price_1SNwlGLIwGlwBzO64zfSxvcS", // <— replace
   },
 };
+
 
 export default function Billing() {
   const [user, setUser] = useState(null);
@@ -34,7 +35,7 @@ export default function Billing() {
     setShowPopup(true);
   };
 
-  const startCheckout = async () => {
+const startCheckout = async () => {
   setStatus("Redirecting to Stripe…");
   try {
     const data = await apiCreateCheckout(PLANS[selectedPlan].priceId);
@@ -43,6 +44,7 @@ export default function Billing() {
     setStatus("Error connecting to Stripe.");
   }
 };
+
 
 
   const openPortal = async () => {

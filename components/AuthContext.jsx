@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
   [refreshUser]
 );
 
-  );
+  
 
   const updatePassword = useCallback((values) => Account.updatePassword(values), []);
 

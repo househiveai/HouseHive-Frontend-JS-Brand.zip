@@ -5,14 +5,17 @@ const PLANS = {
   cohost: {
     price: "$19.99 / mo",
     blurb: "Perfect for part-time hosts managing 1–3 properties.",
+    id: "price_1SRxcvLIwGlwBzO6ZjGZA0pv",
   },
   pro: {
     price: "$29.99 / mo",
     blurb: "Built for professional landlords scaling a modern portfolio.",
+    id: "price_1SNwkMLIwGlwBzO6snGiqUdA",
   },
   agency: {
     price: "$99.99 / mo",
     blurb: "For co-hosting teams who need advanced automations and reporting.",
+    id: "price_1SNwlGLIwGlwBzO64zfSxvcS",
   },
 };
 
@@ -32,14 +35,15 @@ export default function Billing() {
   };
 
   const startCheckout = async () => {
-    setStatus("Redirecting to Stripe…");
-    try {
-      const data = await apiCreateCheckout(selectedPlan);
-      window.location.href = data.url;
-    } catch (e) {
-      setStatus("Error connecting to Stripe.");
-    }
-  };
+  setStatus("Redirecting to Stripe…");
+  try {
+    const data = await apiCreateCheckout(PLANS[selectedPlan].priceId);
+    window.location.href = data.url;
+  } catch (e) {
+    setStatus("Error connecting to Stripe.");
+  }
+};
+
 
   const openPortal = async () => {
     setStatus("Opening portal…");

@@ -85,12 +85,15 @@ export function AuthProvider({ children }) {
   );
 
   const updateEmail = useCallback(
-    async (values) => {
-      const updated = await Account.updateEmail(values);
-      await refreshUser();
-      return updated;
-    },
-    [refreshUser]
+  async (values) => {
+    const data = await Account.updateEmail(values);
+    setAccessToken(data.access_token); // <— important
+    await refreshUser();
+    return data;
+  },
+  [refreshUser]
+);
+
   );
 
   const updatePassword = useCallback((values) => Account.updatePassword(values), []);

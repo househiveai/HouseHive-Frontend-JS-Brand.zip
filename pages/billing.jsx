@@ -85,7 +85,7 @@ const startCheckout = async () => {
             <div className="relative flex h-full flex-col">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{plan}</p>
               <h2 className="mt-2 text-2xl font-semibold text-white capitalize">{plan}</h2>
-              <p className="mt-2 text-sm text-slate-200">{info.price}</p>
+              <p className="mt-2 text-sm text-slate-200">{info.priceLabel}</p> 
               <p className="mt-4 flex-1 text-sm text-slate-200">{info.blurb}</p>
               <button
                 onClick={() => openPopup(plan)}
@@ -117,7 +117,7 @@ const startCheckout = async () => {
               <div>
                 <h2 className="text-3xl font-semibold capitalize">{selectedPlan} plan</h2>
                 <p className="mt-1 text-sm text-slate-200">{PLANS[selectedPlan].blurb}</p>
-                <p className="mt-2 text-sm text-[#FFB400]">{PLANS[selectedPlan].price}</p>
+                <p className="mt-2 text-sm text-[#FFB400]">{PLANS[selectedPlan].priceLabel}</p> 
               </div>
               <button
                 onClick={() => setShowPopup(false)}

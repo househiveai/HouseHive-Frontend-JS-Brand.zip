@@ -38,7 +38,7 @@ export default function Billing() {
 const startCheckout = async () => {
   setStatus("Redirecting to Stripe…");
   try {
-    const data = await apiCreateCheckout(PLANS[selectedPlan].id);
+    const data = await apiCreateCheckout(PLANS[selectedPlan].priceId);
     window.location.href = data.url;
   } catch (e) {
     setStatus("Error connecting to Stripe.");

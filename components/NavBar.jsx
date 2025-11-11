@@ -27,7 +27,7 @@ export default function NavBar() {
       </div>
 
       <Link href="/" className="relative z-10 flex items-center gap-3">
-        <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-transparent p-1 shadow-inner">
+        <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl  bg-transparent p-1">
           <Image
             src="/logo.png"
             alt="HouseHive"

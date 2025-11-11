@@ -110,6 +110,7 @@ export default function UserMenu() {
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-white">{user.name || "HouseHive Member"}</p>
                   <p className="text-xs text-slate-300">{user.email}</p>
+                  <p className="text-xs text-slate-300">{user.plan || "None"}</p>
                 </div>
               </div>
 

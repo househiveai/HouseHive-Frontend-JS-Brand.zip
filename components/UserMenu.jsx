@@ -141,6 +141,8 @@ export default function UserMenu() {
               >
                 Sign out
               </button>
+              <Link href="/admin" className="mt-5 w-full rounded-xl border border-transparent bg-red-500/10 px-3 py-2 text-left text-sm font-medium text-red-200 transition hover:border-red-400/40 hover:bg-red-500/20 hover:text-red-100" onClick={() => setOpen(false)}
+              >Administrator</Link>
             </>
           ) : (
             <div className="space-y-4">

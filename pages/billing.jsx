@@ -3,21 +3,22 @@ import { apiMe, apiCreateCheckout, apiBillingPortal } from "../lib/api";
 
 const PLANS = {
   cohost: {
-    price: "$19.99 / mo",
+    priceLabel: "$19.99 / mo",
     blurb: "Perfect for part-time hosts managing 1–3 properties.",
-    id: "price_1SRxcvLIwGlwBzO6ZjGZA0pv",
+    priceId: "price_1SRxcvLIwGlwBzO6ZjGZA0pv", // <— replace with your real Stripe Price ID
   },
   pro: {
-    price: "$29.99 / mo",
+    priceLabel: "$29.99 / mo",
     blurb: "Built for professional landlords scaling a modern portfolio.",
-    id: "price_1SNwkMLIwGlwBzO6snGiqUdA",
+    priceId: "price_1SNwkMLIwGlwBzO6snGiqUdA", // <— replace
   },
   agency: {
-    price: "$99.99 / mo",
+    priceLabel: "$99.99 / mo",
     blurb: "For co-hosting teams who need advanced automations and reporting.",
-    id: "price_1SNwlGLIwGlwBzO64zfSxvcS",
+    priceId: "price_1SNwlGLIwGlwBzO64zfSxvcS", // <— replace
   },
 };
+
 
 export default function Billing() {
   const [user, setUser] = useState(null);
@@ -34,7 +35,7 @@ export default function Billing() {
     setShowPopup(true);
   };
 
-  const startCheckout = async () => {
+const startCheckout = async () => {
   setStatus("Redirecting to Stripe…");
   try {
     const data = await apiCreateCheckout(PLANS[selectedPlan].id);
@@ -84,7 +85,7 @@ export default function Billing() {
             <div className="relative flex h-full flex-col">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-300">{plan}</p>
               <h2 className="mt-2 text-2xl font-semibold text-white capitalize">{plan}</h2>
-              <p className="mt-2 text-sm text-slate-200">{info.price}</p>
+              <p className="mt-2 text-sm text-slate-200">{info.priceLabel}</p> 
               <p className="mt-4 flex-1 text-sm text-slate-200">{info.blurb}</p>
               <button
                 onClick={() => openPopup(plan)}
@@ -116,7 +117,7 @@ export default function Billing() {
               <div>
                 <h2 className="text-3xl font-semibold capitalize">{selectedPlan} plan</h2>
                 <p className="mt-1 text-sm text-slate-200">{PLANS[selectedPlan].blurb}</p>
-                <p className="mt-2 text-sm text-[#FFB400]">{PLANS[selectedPlan].price}</p>
+                <p className="mt-2 text-sm text-[#FFB400]">{PLANS[selectedPlan].priceLabel}</p> 
               </div>
               <button
                 onClick={() => setShowPopup(false)}

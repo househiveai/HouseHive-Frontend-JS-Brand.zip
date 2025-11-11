@@ -5,7 +5,7 @@ const PLANS = {
   cohost: {
     priceLabel: "$19.99 / mo",
     blurb: "Perfect for part-time hosts managing 1–3 properties.",
-    priceId: "price_1SRxcvLIwGlwBzO6ZjGZA0pv", // <— replace with your real Stripe Price ID
+    priceId: "price_1SS93cLIwGlwBzO6F51rzMWl", // <— replace with your real Stripe Price ID
   },
   pro: {
     priceLabel: "$29.99 / mo",

@@ -133,9 +133,9 @@ export default function UserMenu() {
                   <Link
                     href="/admin"
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between rounded-xl border border-[#FFB400]/30 bg-[#FFB400]/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:bg-[#FFB400]/20 hover:border-[#FFB400]/60"
+                    className="flex items-center justify-between rounded-xl border border-[#FFB400]/30 bg-[#FFB400]/10 px-3 py-2 text-xs font-semibold  text-[#FFB400] transition hover:bg-[#FFB400]/20 hover:border-[#FFB400]/60"
                   >
-                    Admin Dashboard <span className="text-xs text-[#FFB400]/80">↗</span>
+                    Admin Dashboard <span className="text-xs text-slate-400">↗</span>
                   </Link>
                 )}
 

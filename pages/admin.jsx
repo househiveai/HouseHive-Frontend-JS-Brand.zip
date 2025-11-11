@@ -26,9 +26,9 @@ export default function Admin() {
   useEffect(() => { load(); }, []);
 
   const changePlan = async (user_id, plan) => {
-  await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
-  load();
-};
+    await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
+    load();
+  };
 
   const remove = async (user_id) => {
     if (confirm("Delete this user?")) {
@@ -82,13 +82,29 @@ export default function Admin() {
                     <select
                       value={u.plan || "none"}
                       onChange={(e) => changePlan(u.id, e.target.value)}
-                      className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition"
+                      className="
+                          appearance-none
+                          rounded-xl
+                          bg-white/10
+                          border border-white/10
+                          px-3 py-1
+                          text-white
+                          outline-none
+                          focus:border-[#FFB400]
+                          transition
+                          cursor-pointer
+                        "
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                        color: "white"
+                      }}
                     >
-                      <option value="none">None</option>
-                      <option value="cohost">Cohost</option>
-                      <option value="pro">Pro</option>
-                      <option value="agency">Agency</option>
+                      <option className="bg-[#111826] text-white" value="none">None</option>
+                      <option className="bg-[#111826] text-white" value="cohost">Cohost</option>
+                      <option className="bg-[#111826] text-white" value="pro">Pro</option>
+                      <option className="bg-[#111826] text-white" value="agency">Agency</option>
                     </select>
+
 
                   </td>
 

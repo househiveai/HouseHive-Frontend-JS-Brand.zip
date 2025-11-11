@@ -26,9 +26,9 @@ export default function Admin() {
   useEffect(() => { load(); }, []);
 
   const changePlan = async (user_id, plan) => {
-    await apiAdminSetPlan(user_id, plan);
-    load();
-  };
+  await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
+  load();
+};
 
   const remove = async (user_id) => {
     if (confirm("Delete this user?")) {
@@ -80,15 +80,16 @@ export default function Admin() {
 
                   <td className="py-3">
                     <select
-                      value={u.plan || "None"}
+                      value={u.plan || "none"}
                       onChange={(e) => changePlan(u.id, e.target.value)}
                       className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition"
                     >
-                      <option value="None">None</option>
-                      <option value="Cohost">Cohost</option>
-                      <option value="Pro">Pro</option>
-                      <option value="Agency">Agency</option>
+                      <option value="none">None</option>
+                      <option value="cohost">Cohost</option>
+                      <option value="pro">Pro</option>
+                      <option value="agency">Agency</option>
                     </select>
+
                   </td>
 
                   <td className="py-3">

@@ -29,12 +29,12 @@ export default function UserMenu() {
 
   const initials = user?.name
     ? user.name
-        .trim()
-        .split(" ")
-        .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase())
-        .slice(0, 2)
-        .join("")
+      .trim()
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("")
     : user?.email?.slice(0, 2).toUpperCase();
 
   const isAuthenticated = Boolean(user);
@@ -51,11 +51,10 @@ export default function UserMenu() {
         aria-expanded={open}
       >
         <span
-          className={`${
-            isAuthenticated
+          className={`${isAuthenticated
               ? "bg-gradient-to-br from-[#FFB400] to-[#d49300] text-slate-900"
               : "border border-white/15 bg-white/5 text-white/70"
-          } ${avatarClassName}`}
+            } ${avatarClassName}`}
         >
           {isAuthenticated ? (
             initials || "HH"
@@ -131,8 +130,15 @@ export default function UserMenu() {
                 </Link>
 
                 {user?.is_admin && (
-                <Link href="/admin" className="mt-5 w-full rounded-xl border border-transparent bg-red-500/10 px-3 py-2 text-left text-sm font-medium text-red-200 transition hover:border-red-400/40 hover:bg-red-500/20 hover:text-red-100" onClick={() => setOpen(false)}
-                >Admin Dashboard</Link>)}
+                  <Link
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between rounded-xl border border-[#FFB400]/30 bg-[#FFB400]/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:bg-[#FFB400]/20 hover:border-[#FFB400]/60"
+                  >
+                    Admin Dashboard <span className="text-xs text-[#FFB400]/80">↗</span>
+                  </Link>
+                )}
+
 
               </nav>
 
@@ -146,7 +152,7 @@ export default function UserMenu() {
               >
                 Sign out
               </button>
-              
+
 
             </>
           ) : (

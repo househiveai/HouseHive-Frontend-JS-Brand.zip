@@ -1,8 +1,26 @@
+"use client";
+
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useAuth } from "../components/AuthContext";
 import { apiAdminUsers, apiAdminSetPlan, apiAdminDeleteUser } from "../lib/api";
 
 export default function Admin() {
+  const { user, loaded } = useAuth();
+  const router = useRouter();
   const [users, setUsers] = useState([]);
+
+  // AUTH GUARD
+  if (!loaded) return null;
+  if (!user) {
+    if (typeof window !== "undefined") router.push("/login");
+    return null;
+  }
+  if (!user.is_admin) {
+    if (typeof window !== "undefined") router.push("/dashboard");
+    return null;
+  }
 
   const load = async () => setUsers(await apiAdminUsers());
   useEffect(() => { load(); }, []);
@@ -20,50 +38,81 @@ export default function Admin() {
   };
 
   return (
-    <div className="p-8 bg-black text-white min-h-screen">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">
-        Admin Dashboard
-      </h1>
+    <section className="space-y-10">
+      {/* Header */}
+      <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Admin controls</p>
+          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">User & Billing Management</h1>
+          <p className="max-w-2xl text-sm text-slate-200">
+            Manage customer plans, access permissions, and lifecycle actions.
+          </p>
+        </div>
+      </header>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-zinc-900">
-            <tr>
-              <th className="p-3 border-b border-zinc-700">Email</th>
-              <th className="p-3 border-b border-zinc-700">Plan</th>
-              <th className="p-3 border-b border-zinc-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-zinc-800">
-                <td className="p-3 border-b border-zinc-700">{u.email}</td>
-                <td className="p-3 border-b border-zinc-700 text-yellow-400">
-                  {u.plan}
-                </td>
-                <td className="p-3 border-b border-zinc-700">
-                  <select
-                    value={u.plan}
-                    onChange={(e) => changePlan(u.id, e.target.value)}
-                    className="bg-zinc-800 text-white rounded p-2 mr-3"
-                  >
-                    <option value="Free">Free</option>
-                    <option value="Cohost">Cohost</option>
-                    <option value="Pro">Pro</option>
-                    <option value="Agency">Agency</option>
-                  </select>
-                  <button
-                    onClick={() => remove(u.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {/* Table Card */}
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+        <h2 className="text-lg font-semibold text-white mb-6">All Users</h2>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-slate-200">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-[0.3em] text-slate-400 border-b border-white/10">
+                <th className="py-3">Email</th>
+                <th className="py-3">Plan</th>
+                <th className="py-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </thead>
+
+            <tbody className="divide-y divide-white/10">
+              {users.map((u) => (
+                <tr key={u.id} className="hover:bg-white/5 transition">
+                  <td className="py-4">
+                    <div className="flex flex-col leading-tight">
+                      <span className="font-semibold text-white">
+                        {u.name || "N/A"}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {u.email}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="py-3">
+                    <select
+                      value={u.plan || "None"}
+                      onChange={(e) => changePlan(u.id, e.target.value)}
+                      className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition"
+                    >
+                      <option value="None">None</option>
+                      <option value="Cohost">Cohost</option>
+                      <option value="Pro">Pro</option>
+                      <option value="Agency">Agency</option>
+                    </select>
+                  </td>
+
+                  <td className="py-3">
+                    <button
+                      onClick={() => remove(u.id)}
+                      className="rounded-xl bg-red-500/20 border border-red-400/30 px-3 py-1 text-red-200 text-xs font-medium transition hover:bg-red-500/30 hover:border-red-400/60"
+                    >
+                      Delete user
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Back Link */}
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] hover:text-[#f39c00]"
+      >
+        ← Back to dashboard
+      </Link>
+    </section>
   );
 }

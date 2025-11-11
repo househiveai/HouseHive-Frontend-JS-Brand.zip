@@ -375,6 +375,10 @@ export default function Admin() {
                   <tr key={u.id} className="hover:bg-white/5 transition">
                     <td className="py-4">
                       <div className="flex flex-col leading-tight">
+                        {u?.is_admin && (
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                            Admin
+                          </p>)}
                         <span className="font-semibold text-white">
                           {u.name || "N/A"}
                         </span>

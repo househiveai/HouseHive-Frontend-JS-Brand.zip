@@ -82,29 +82,12 @@ export default function Admin() {
                     <select
                       value={u.plan || "none"}
                       onChange={(e) => changePlan(u.id, e.target.value)}
-                      className="
-                          appearance-none
-                          rounded-xl
-                          bg-white/10
-                          border border-white/10
-                          px-3 py-1
-                          text-white
-                          outline-none
-                          focus:border-[#FFB400]
-                          transition
-                          cursor-pointer
-                        "
-                      style={{
-                        backgroundColor: "rgba(255,255,255,0.08)",
-                        color: "white"
-                      }}
-                    >
-                      <option className="bg-[#111826] text-white" value="none">None</option>
-                      <option className="bg-[#111826] text-white" value="cohost">Cohost</option>
-                      <option className="bg-[#111826] text-white" value="pro">Pro</option>
-                      <option className="bg-[#111826] text-white" value="agency">Agency</option>
+                      className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition cursor-pointer"                    >
+                      <option value="none">None</option>
+                      <option value="cohost">Cohost</option>
+                      <option value="pro">Pro</option>
+                      <option value="agency">Agency</option>
                     </select>
-
 
                   </td>
 

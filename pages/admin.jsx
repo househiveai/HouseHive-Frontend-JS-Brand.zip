@@ -10,72 +10,72 @@ export default function Admin() {
   const { user, loaded } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState([]);
+  const [authorized, setAuthorized] = useState(false);
 
+  // Handle redirect + authorization
   useEffect(() => {
-    // Wait until auth is loaded
-    if (!loaded) return;
-
-    // Redirect if not logged in
+    if (!loaded) return; // wait for auth state
     if (!user) {
       router.push("/login");
       return;
     }
-
-    // Redirect if not admin
     if (!user.is_admin) {
       router.push("/dashboard");
       return;
     }
-
-    // Only load users if authenticated admin
-    const load = async () => {
-      try {
-        const data = await apiAdminUsers();
-        setUsers(data);
-      } catch (err) {
-        console.error("Failed to load users", err);
-      }
-    };
-    load();
+    setAuthorized(true);
   }, [user, loaded, router]);
+
+  // Load users once authorized
+  useEffect(() => {
+    if (authorized) {
+      const load = async () => {
+        const list = await apiAdminUsers();
+        setUsers(list);
+      };
+      load();
+    }
+  }, [authorized]);
 
   const changePlan = async (user_id, plan) => {
     await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
-    const data = await apiAdminUsers();
-    setUsers(data);
+    const updated = await apiAdminUsers();
+    setUsers(updated);
   };
 
   const remove = async (user_id) => {
     if (confirm("Delete this user?")) {
       await apiAdminDeleteUser(user_id);
-      const data = await apiAdminUsers();
-      setUsers(data);
+      const updated = await apiAdminUsers();
+      setUsers(updated);
     }
   };
 
-  // Display loading spinner or blank while auth loads
-  if (!loaded || !user?.is_admin) {
+  // While checking authorization, render nothing
+  if (!authorized) {
     return (
-      <section className="text-white p-10 text-center">
-        <p>Loading...</p>
-      </section>
+      <div className="flex h-screen items-center justify-center text-slate-400">
+        Checking admin permissions...
+      </div>
     );
   }
 
   return (
     <section className="space-y-10">
-      {/* Header */}
       <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
         <div className="flex flex-col gap-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Admin controls</p>
-          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">User & Billing Management</h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">
+            Admin controls
+          </p>
+          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+            User & Billing Management
+          </h1>
           <p className="max-w-2xl text-sm text-slate-200">
             Manage customer plans, access permissions, and lifecycle actions.
           </p>
         </div>
       </header>
 
-      {/* Table Card */}
       <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
         <h2 className="text-lg font-semibold text-white mb-6">All Users</h2>
 
@@ -88,6 +88,7 @@ export default function Admin() {
                 <th className="py-3">Actions</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-white/10">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-white/5 transition">

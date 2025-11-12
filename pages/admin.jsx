@@ -10,20 +10,20 @@ export default function Admin() {
   const { user, loaded } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState([]);
-  const [authState, setAuthState] = useState("checking"); // "checking" | "unauthorized" | "authorized"
+  const [authState, setAuthState] = useState("checking"); // checking | redirecting | authorized
 
-  // ✅ All hooks are called before any return.
+  // ✅ run once to check auth; hooks come first, before any return
   useEffect(() => {
-    if (!loaded) return; // wait for AuthContext to initialize
+    if (!loaded) return;
 
     if (!user) {
-      setAuthState("unauthorized");
+      setAuthState("redirecting");
       router.push("/login");
       return;
     }
 
     if (!user.is_admin) {
-      setAuthState("unauthorized");
+      setAuthState("redirecting");
       router.push("/dashboard");
       return;
     }
@@ -31,6 +31,7 @@ export default function Admin() {
     setAuthState("authorized");
   }, [user, loaded, router]);
 
+  // ✅ load user list only when authorized
   useEffect(() => {
     if (authState === "authorized") {
       (async () => {
@@ -54,7 +55,7 @@ export default function Admin() {
     }
   };
 
-  // ✅ Early render returns happen *after* hooks are declared
+  // ✅ All hooks have already been declared; safe to return conditionally now
   if (authState === "checking") {
     return (
       <div className="flex h-screen items-center justify-center text-slate-400">
@@ -63,7 +64,7 @@ export default function Admin() {
     );
   }
 
-  if (authState === "unauthorized") {
+  if (authState === "redirecting") {
     return (
       <div className="flex h-screen items-center justify-center text-slate-400">
         Redirecting...
@@ -89,6 +90,7 @@ export default function Admin() {
 
       <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
         <h2 className="text-lg font-semibold text-white mb-6">All Users</h2>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-slate-200">
             <thead>
@@ -98,6 +100,7 @@ export default function Admin() {
                 <th className="py-3">Actions</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-white/10">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-white/5 transition">
@@ -107,6 +110,7 @@ export default function Admin() {
                       <span className="text-xs text-slate-400">{u.email}</span>
                     </div>
                   </td>
+
                   <td className="py-3">
                     <select
                       value={u.plan || "none"}
@@ -119,6 +123,7 @@ export default function Admin() {
                       <option value="agency">Agency</option>
                     </select>
                   </td>
+
                   <td className="py-3">
                     <button
                       onClick={() => remove(u.id)}

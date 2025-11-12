@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", badgeClass: "bg-white/10 text-slate-200" },
@@ -38,6 +41,62 @@ const getStatusMeta = (status) =>
   STATUS_OPTIONS.find((option) => option.value === status) ?? STATUS_OPTIONS[0];
 
 export default function Maintenance() {
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+  const [metricsError, setMetricsError] = useState("");
+  const [vendors, setVendors] = useState([
+    { name: "BrightFix Plumbing", service: "Plumbing" },
+    { name: "Evergreen HVAC", service: "Climate Control" },
+    { name: "Skyline Electrical", service: "Electrical" },
+  ]);
+  const [newVendor, setNewVendor] = useState({ name: "", service: "" });
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const snapshot = await fetchPortfolioSnapshot();
+        if (!active) return;
+        setMetrics(snapshot.metrics);
+        if (snapshot.errorSummary) {
+          setMetricsError(snapshot.errorSummary);
+        } else if (snapshot.errors?.length) {
+          setMetricsError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+        } else {
+          setMetricsError("");
+        }
+      } catch (err) {
+        if (!active) return;
+        setMetricsError(err?.message || "Unable to load dashboard metrics.");
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleVendorFieldChange = (field, value) => {
+    setNewVendor((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddVendor = (event) => {
+    event.preventDefault();
+    if (!newVendor.name.trim() || !newVendor.service.trim()) {
+      return;
+    }
+
+    setVendors((current) => [
+      { name: newVendor.name.trim(), service: newVendor.service.trim() },
+      ...current,
+    ]);
+    setNewVendor({ name: "", service: "" });
+  };
+
+  const handleRemoveVendor = (indexToRemove) => {
+    setVendors((current) => current.filter((_, index) => index !== indexToRemove));
+  };
+
   const [requests, setRequests] = useState([
     {
       id: "req-1",
@@ -219,6 +278,12 @@ export default function Maintenance() {
           auth experience.
         </p>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Maintenance" />
+
+      {metricsError && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{metricsError}</div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">

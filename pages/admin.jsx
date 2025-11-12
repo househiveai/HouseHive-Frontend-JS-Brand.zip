@@ -11,31 +11,56 @@ export default function Admin() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
 
-  // AUTH GUARD
-  if (!loaded) return null;
-  if (!user) {
-    if (typeof window !== "undefined") router.push("/login");
-    return null;
-  }
-  if (!user.is_admin) {
-    if (typeof window !== "undefined") router.push("/dashboard");
-    return null;
-  }
+  useEffect(() => {
+    // Wait until auth is loaded
+    if (!loaded) return;
 
-  const load = async () => setUsers(await apiAdminUsers());
-  useEffect(() => { load(); }, []);
+    // Redirect if not logged in
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Redirect if not admin
+    if (!user.is_admin) {
+      router.push("/dashboard");
+      return;
+    }
+
+    // Only load users if authenticated admin
+    const load = async () => {
+      try {
+        const data = await apiAdminUsers();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to load users", err);
+      }
+    };
+    load();
+  }, [user, loaded, router]);
 
   const changePlan = async (user_id, plan) => {
     await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
-    load();
+    const data = await apiAdminUsers();
+    setUsers(data);
   };
 
   const remove = async (user_id) => {
     if (confirm("Delete this user?")) {
       await apiAdminDeleteUser(user_id);
-      load();
+      const data = await apiAdminUsers();
+      setUsers(data);
     }
   };
+
+  // Display loading spinner or blank while auth loads
+  if (!loaded || !user?.is_admin) {
+    return (
+      <section className="text-white p-10 text-center">
+        <p>Loading...</p>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-10">
@@ -63,34 +88,27 @@ export default function Admin() {
                 <th className="py-3">Actions</th>
               </tr>
             </thead>
-
             <tbody className="divide-y divide-white/10">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-white/5 transition">
                   <td className="py-4">
                     <div className="flex flex-col leading-tight">
-                      <span className="font-semibold text-white">
-                        {u.name || "N/A"}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        {u.email}
-                      </span>
+                      <span className="font-semibold text-white">{u.name || "N/A"}</span>
+                      <span className="text-xs text-slate-400">{u.email}</span>
                     </div>
                   </td>
-
                   <td className="py-3">
                     <select
                       value={u.plan || "none"}
                       onChange={(e) => changePlan(u.id, e.target.value)}
-                      className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition cursor-pointer"                    >
+                      className="rounded-xl bg-white/10 border border-white/10 px-3 py-1 text-white outline-none focus:border-[#FFB400] transition cursor-pointer"
+                    >
                       <option value="none">None</option>
                       <option value="cohost">Cohost</option>
                       <option value="pro">Pro</option>
                       <option value="agency">Agency</option>
                     </select>
-
                   </td>
-
                   <td className="py-3">
                     <button
                       onClick={() => remove(u.id)}
@@ -106,7 +124,6 @@ export default function Admin() {
         </div>
       </section>
 
-      {/* Back Link */}
       <Link
         href="/dashboard"
         className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] hover:text-[#f39c00]"

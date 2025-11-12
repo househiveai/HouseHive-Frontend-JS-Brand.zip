@@ -1,0 +1,6 @@
+{
+  "extends": ["next", "next/core-web-vitals"],
+  "rules": {
+    "react/no-array-index-key": "warn"
+  }
+}

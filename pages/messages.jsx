@@ -17,20 +17,29 @@ function MessagesContent() {
   const chatRef = useRef(null);
 
   const send = async () => {
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
 
-    const userMessage = { role: "user", content: input.trim() };
+    const userMessage = { role: "user", content: trimmed };
+    const historyForApi = [...log].reverse();
+
     setLog((prev) => [userMessage, ...prev]);
     setInput("");
     setTyping(true);
 
     try {
-      const res = await apiChat(input);
-      const botMessage = { role: "assistant", content: res.reply };
+      const res = await apiChat(trimmed, historyForApi);
+      const reply = res?.reply || res?.message || res?.response || "";
+      if (!reply) throw new Error("Missing reply from AI API");
+      const botMessage = { role: "assistant", content: reply };
       setLog((prev) => [botMessage, ...prev]);
-    } catch {
+    } catch (error) {
+      const message =
+        error?.message === "Missing reply from AI API"
+          ? "HiveBot could not understand the response from the AI API."
+          : "HiveBot could not connect to the AI API.";
       setLog((prev) => [
-        { role: "assistant", content: "HiveBot could not connect to the AI API." },
+        { role: "assistant", content: message },
         ...prev,
       ]);
     } finally {

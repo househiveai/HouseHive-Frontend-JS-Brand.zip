@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", badgeClass: "bg-white/10 text-slate-200" },

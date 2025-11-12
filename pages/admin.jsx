@@ -10,32 +10,35 @@ export default function Admin() {
   const { user, loaded } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState([]);
-  const [authorized, setAuthorized] = useState(false);
+  const [authState, setAuthState] = useState("checking"); // "checking" | "unauthorized" | "authorized"
 
-  // Handle redirect + authorization
+  // ✅ All hooks are called before any return.
   useEffect(() => {
-    if (!loaded) return; // wait for auth state
+    if (!loaded) return; // wait for AuthContext to initialize
+
     if (!user) {
+      setAuthState("unauthorized");
       router.push("/login");
       return;
     }
+
     if (!user.is_admin) {
+      setAuthState("unauthorized");
       router.push("/dashboard");
       return;
     }
-    setAuthorized(true);
+
+    setAuthState("authorized");
   }, [user, loaded, router]);
 
-  // Load users once authorized
   useEffect(() => {
-    if (authorized) {
-      const load = async () => {
+    if (authState === "authorized") {
+      (async () => {
         const list = await apiAdminUsers();
         setUsers(list);
-      };
-      load();
+      })();
     }
-  }, [authorized]);
+  }, [authState]);
 
   const changePlan = async (user_id, plan) => {
     await apiAdminSetPlan(user_id, plan === "none" ? null : plan);
@@ -51,11 +54,19 @@ export default function Admin() {
     }
   };
 
-  // While checking authorization, render nothing
-  if (!authorized) {
+  // ✅ Early render returns happen *after* hooks are declared
+  if (authState === "checking") {
     return (
       <div className="flex h-screen items-center justify-center text-slate-400">
         Checking admin permissions...
+      </div>
+    );
+  }
+
+  if (authState === "unauthorized") {
+    return (
+      <div className="flex h-screen items-center justify-center text-slate-400">
+        Redirecting...
       </div>
     );
   }
@@ -78,7 +89,6 @@ export default function Admin() {
 
       <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
         <h2 className="text-lg font-semibold text-white mb-6">All Users</h2>
-
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-slate-200">
             <thead>
@@ -88,7 +98,6 @@ export default function Admin() {
                 <th className="py-3">Actions</th>
               </tr>
             </thead>
-
             <tbody className="divide-y divide-white/10">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-white/5 transition">

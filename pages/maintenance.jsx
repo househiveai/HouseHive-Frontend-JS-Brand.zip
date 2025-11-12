@@ -1,6 +1,36 @@
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function Maintenance() {
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+  const [metricsError, setMetricsError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const snapshot = await fetchPortfolioSnapshot();
+        if (!active) return;
+        setMetrics(snapshot.metrics);
+        if (snapshot.errors?.length) {
+          setMetricsError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+        } else {
+          setMetricsError("");
+        }
+      } catch (err) {
+        if (!active) return;
+        setMetricsError(err?.message || "Unable to load dashboard metrics.");
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="space-y-8">
       <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
@@ -10,6 +40,12 @@ export default function Maintenance() {
           Triage requests, assign vendors, and keep residents informed — all within a modern interface that mirrors your new auth experience.
         </p>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Maintenance" />
+
+      {metricsError && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{metricsError}</div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
@@ -21,7 +57,8 @@ export default function Maintenance() {
                 <p className="font-semibold text-white">Leaking faucet in Unit 203</p>
                 <p className="text-xs text-slate-400">Reported 2 days ago</p>
               </div>
-              <span className="rounded-full bg-[#FFB400]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
+              <span className="rounded-full bg-[#FFB400]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB40
+0]">
                 In progress
               </span>
             </li>

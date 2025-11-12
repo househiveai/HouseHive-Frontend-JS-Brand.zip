@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import RequireAuth from "../components/RequireAuth";
 import { apiChat, apiDraftMessage } from "../lib/api";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function Messages() {
   return (
@@ -15,6 +17,8 @@ function MessagesContent() {
   const [log, setLog] = useState([]);
   const [typing, setTyping] = useState(false);
   const chatRef = useRef(null);
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+  const [metricsError, setMetricsError] = useState("");
 
   const send = async () => {
     if (!input.trim()) return;
@@ -42,6 +46,30 @@ function MessagesContent() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [log, typing]);
 
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const snapshot = await fetchPortfolioSnapshot();
+        if (!active) return;
+        setMetrics(snapshot.metrics);
+        if (snapshot.errors?.length) {
+          setMetricsError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+        } else {
+          setMetricsError("");
+        }
+      } catch (err) {
+        if (!active) return;
+        setMetricsError(err?.message || "Unable to load dashboard metrics.");
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="space-y-8">
       <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
@@ -51,6 +79,12 @@ function MessagesContent() {
           Draft proactive updates, respond to residents with AI assistance, and keep every conversation in one polished feed.
         </p>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Messages" />
+
+      {metricsError && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{metricsError}</div>
+      )}
 
       <div className="rounded-[2.5rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">

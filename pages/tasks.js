@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RequireAuth from "../components/RequireAuth";
-import { apiAddTask, apiGetTasks, apiGetProperties } from "../lib/api";
+import { apiAddTask } from "../lib/api";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function TasksPage() {
   return (
@@ -18,23 +20,28 @@ function TasksContent() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setError("");
     setLoading(true);
     try {
-      const [tasksData, propertiesData] = await Promise.all([
-        apiGetTasks(),
-        apiGetProperties(),
-      ]);
-      setTasks(Array.isArray(tasksData) ? tasksData : tasksData?.results ?? []);
-      setProperties(Array.isArray(propertiesData) ? propertiesData : propertiesData?.results ?? []);
+      const snapshot = await fetchPortfolioSnapshot();
+      setTasks(snapshot.tasks);
+      setProperties(snapshot.properties);
+      setMetrics(snapshot.metrics);
+      if (snapshot.errorSummary) {
+        setError(snapshot.errorSummary);
+      } else if (snapshot.errors?.length) {
+        setError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+      }
     } catch (err) {
       setError(err?.message || "Unable to load tasks.");
+      setMetrics(createEmptyMetrics());
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const addTask = async () => {
     if (!title) {
@@ -61,7 +68,7 @@ function TasksContent() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   return (
     <section className="space-y-8">
@@ -72,6 +79,8 @@ function TasksContent() {
           Assign work orders, capture notes, and keep your team aligned in a sleek glassmorphic command center.
         </p>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Tasks" />
 
       {error && (
         <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>

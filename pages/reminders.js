@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RequireAuth from "../components/RequireAuth";
-import { apiAddReminder, apiGetReminders } from "../lib/api";
+import { apiAddReminder } from "../lib/api";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function RemindersPage() {
   return (
@@ -16,19 +18,27 @@ function RemindersContent() {
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setError("");
     setLoading(true);
     try {
-      const reminderList = await apiGetReminders();
-      setReminders(Array.isArray(reminderList) ? reminderList : reminderList?.results ?? []);
+      const snapshot = await fetchPortfolioSnapshot();
+      setReminders(snapshot.reminders);
+      setMetrics(snapshot.metrics);
+      if (snapshot.errorSummary) {
+        setError(snapshot.errorSummary);
+      } else if (snapshot.errors?.length) {
+        setError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+      }
     } catch (err) {
       setError(err?.message || "Unable to load reminders.");
+      setMetrics(createEmptyMetrics());
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const addReminder = async () => {
     if (!title) {
@@ -50,7 +60,7 @@ function RemindersContent() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   return (
     <section className="space-y-8">
@@ -61,6 +71,8 @@ function RemindersContent() {
           Schedule renewals, inspections, and follow-ups with the same glassmorphic polish as your authentication experience.
         </p>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Reminders" />
 
       {error && (
         <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>

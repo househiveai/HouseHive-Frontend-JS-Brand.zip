@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RequireAuth from "../components/RequireAuth";
-import { apiMe, apiGetProperties, apiAddProperty } from "../lib/api";
+import { apiMe, apiAddProperty } from "../lib/api";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function PropertiesPage() {
   return (
@@ -18,30 +20,40 @@ function PropertiesContent() {
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [me, snapshot] = await Promise.all([apiMe(), fetchPortfolioSnapshot()]);
+      setUser(me);
+      setProperties(snapshot.properties);
+      setMetrics(snapshot.metrics);
+      if (snapshot.errorSummary) {
+        setError(snapshot.errorSummary);
+      } else if (snapshot.errors?.length) {
+        setError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+      }
+    } catch (err) {
+      setError(err?.message || "Unable to load properties.");
+      setMetrics(createEmptyMetrics());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const [me, props] = await Promise.all([apiMe(), apiGetProperties()]);
-        setUser(me);
-        setProperties(Array.isArray(props) ? props : props?.results ?? []);
-      } catch (err) {
-        setError(err?.message || "Unable to load properties.");
-      } finally {
-        setLoading(false);
-      }
-    }
     load();
-  }, []);
+  }, [load]);
 
   async function handleAddProperty(event) {
     event.preventDefault();
     setError("");
     try {
       const payload = { name, address: address || null };
-      const created = await apiAddProperty(payload);
-      setProperties((prev) => [created, ...prev]);
+      await apiAddProperty(payload);
+      await load();
       setShowForm(false);
       setName("");
       setAddress("");
@@ -79,6 +91,8 @@ function PropertiesContent() {
           + Add property
         </button>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Properties" />
 
       {error && (
         <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>

@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAccessToken } from "../lib/auth";
-import { api } from "../lib/api";
+import { apiMe } from "../lib/api";
+import { createEmptyMetrics, fetchPortfolioSnapshot, formatCurrency } from "../lib/portfolio";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ properties: 0, tenants: 0, tasks: 0, reminders: 0 });
+  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+  const [error, setError] = useState("");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -21,18 +23,20 @@ export default function DashboardPage() {
 
     (async () => {
       try {
-        // me
-        const me = await api.get("/auth/me");
+        const [me, snapshot] = await Promise.all([apiMe(), fetchPortfolioSnapshot()]);
+
         setUser(me);
-
-        // properties (your backend prefers a trailing slash; both will work due to 307)
-        const props = await api.get("/properties/").catch(() => []);
-        const propCount = Array.isArray(props) ? props.length : (props?.count ?? 0);
-
-        // for now, tenants/tasks/reminders not available → 0
-        setStats({ properties: propCount, tenants: 0, tasks: 0, reminders: 0 });
+        setMetrics(snapshot.metrics);
+        if (snapshot.errorSummary) {
+          setError(snapshot.errorSummary);
+        } else if (snapshot.errors?.length) {
+          setError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+        } else {
+          setError("");
+        }
       } catch (e) {
         console.error("Dashboard load failed", e);
+        setError(e?.message || "Unable to load dashboard data.");
       } finally {
         setLoading(false);
       }
@@ -69,15 +73,21 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {error && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Properties" value={stats.properties} trend="▲" accent="emerald" />
-        <StatCard label="Tenants & guests" value={stats.tenants} trend="―" accent="sky" />
-        <StatCard label="Active tasks" value={stats.tasks} trend="●" accent="amber" />
-        <StatCard label="Reminders" value={stats.reminders} trend="●" accent="violet" />
+        <StatCard label="Properties" value={metrics.propertyCount} trend="▲" accent="emerald" />
+        <StatCard label="Tenants & guests" value={metrics.tenantCount} trend="―" accent="sky" />
+        <StatCard label="Active tasks" value={metrics.taskCount} trend="●" accent="amber" />
+        <StatCard label="Reminders" value={metrics.reminderCount} trend="●" accent="violet" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
+          <FinancialSection financials={metrics.financials} />
+
           <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <header className="flex items-center justify-between">
               <div>
@@ -114,6 +124,8 @@ export default function DashboardPage() {
         </div>
 
         <aside className="space-y-6">
+          <VacancyWindow occupancy={metrics.occupancy} />
+
           <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">This week&apos;s focus</h2>
             <ul className="mt-6 space-y-4 text-sm text-slate-200">
@@ -156,6 +168,116 @@ export default function DashboardPage() {
             </Link>
           </section>
         </aside>
+      </div>
+    </section>
+  );
+}
+
+function FinancialSection({ financials }) {
+  const revenue = financials?.revenue ?? 0;
+  const expenses = financials?.expenses ?? 0;
+  const net = financials?.net ?? 0;
+  const estimated = Boolean(financials?.estimated);
+  const netPositive = net >= 0;
+
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Financial performance</p>
+          <h2 className="mt-1 text-lg font-semibold text-white">Monthly profits &amp; losses</h2>
+        </div>
+        <span
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${
+            netPositive ? "bg-emerald-400/20 text-emerald-200" : "bg-rose-400/20 text-rose-200"
+          }`}
+        >
+          {netPositive ? "Profit" : "Loss"}
+        </span>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <FinancialPill label="Revenue" value={formatCurrency(revenue)} accent="emerald" />
+        <FinancialPill label="Expenses" value={formatCurrency(expenses)} accent="rose" />
+        <FinancialPill
+          label="Net"
+          value={formatCurrency(net)}
+          accent={netPositive ? "emerald" : "rose"}
+          emphasize
+        />
+      </div>
+
+      <p className="mt-6 text-xs text-slate-300">
+        {estimated
+          ? "We’re estimating performance based on your current portfolio. Add rent and expense data per property to see exact numbers."
+          : "These totals reflect rents and expenses synced across your properties and tenants."}
+      </p>
+    </section>
+  );
+}
+
+function FinancialPill({ label, value, accent, emphasize = false }) {
+  const accentBorder = {
+    emerald: "border-emerald-400/40 bg-emerald-400/10 text-emerald-100",
+    rose: "border-rose-400/40 bg-rose-400/10 text-rose-100",
+    slate: "border-white/10 bg-white/5 text-slate-200",
+  };
+
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-4 text-sm shadow ${accentBorder[accent] ?? accentBorder.slate} ${
+        emphasize ? "sm:col-span-1 sm:row-span-1" : ""
+      }`}
+    >
+      <p className="text-xs uppercase tracking-[0.3em] opacity-80">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function VacancyWindow({ occupancy }) {
+  const total = occupancy?.total ?? 0;
+  const rented = occupancy?.rented ?? 0;
+  const vacant = occupancy?.vacant ?? 0;
+  const rate = occupancy?.rate ?? 0;
+  const vacancyRate = occupancy?.vacancyRate ?? 0;
+  const estimated = Boolean(occupancy?.estimated);
+  const hasData = total > 0;
+
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Vacancy window</p>
+      <h2 className="mt-1 text-lg font-semibold text-white">Rented vs. vacant properties</h2>
+
+      <div className="mt-6 space-y-4">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <div className="flex items-center justify-between text-sm text-slate-200">
+            <span className="font-semibold text-emerald-200">{rented} rented</span>
+            <span className="font-semibold text-rose-200">{vacant} vacant</span>
+          </div>
+          <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-400/70 to-emerald-400/30"
+              style={{ width: `${hasData ? rate : 0}%` }}
+            />
+          </div>
+          <div className="mt-3 flex items-center justify-between text-xs text-slate-300">
+            <span>Occupancy {rate}%</span>
+            <span>Vacancy {vacancyRate}%</span>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-300">
+          {hasData
+            ? `Tracking ${total} total properties with ${rented} currently leased.`
+            : "Add occupancy details to your properties and tenant assignments to unlock live insights."}
+        </p>
+
+        {estimated && (
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+            Estimated using tenant assignments until explicit occupancy data is provided.
+          </p>
+        )}
       </div>
     </section>
   );

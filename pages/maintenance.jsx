@@ -1,115 +1,218 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import DashboardBridge from "../components/DashboardBridge";
 import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
+
+const STATUS_OPTIONS = [
+  { value: "new", label: "New", badgeClass: "bg-white/10 text-slate-200" },
+  {
+    value: "in-progress",
+    label: "In progress",
+    badgeClass: "bg-[#FFB400]/10 text-[#FFB400]",
+  },
+  {
+    value: "scheduled",
+    label: "Scheduled",
+    badgeClass: "bg-sky-400/20 text-sky-200",
+  },
+  {
+    value: "resolved",
+    label: "Resolved",
+    badgeClass: "bg-emerald-400/20 text-emerald-200",
+  },
+];
+
+const vendorDirectory = [
+  { id: "v1", name: "Brightline Plumbing" },
+  { id: "v2", name: "ClimateCraft HVAC" },
+  { id: "v3", name: "Evergreen Electrical" },
+  { id: "v4", name: "Summit Roofing" },
+];
+
+const propertyRoster = [
+  "Maple Grove Apartments",
+  "Townhome 104",
+  "Lakeside Villas",
+  "Unit 203",
+];
+
+const getStatusMeta = (status) =>
+  STATUS_OPTIONS.find((option) => option.value === status) ?? STATUS_OPTIONS[0];
+
 export default function Maintenance() {
-  const [dashboardMetrics, setDashboardMetrics] = useState(() => createEmptyMetrics());
-  const [metricsError, setMetricsError] = useState("");
-  const [vendors, setVendors] = useState([
-    { name: "BrightFix Plumbing", service: "Plumbing" },
-    { name: "Evergreen HVAC", service: "Climate Control" },
-    { name: "Skyline Electrical", service: "Electrical" },
-  ]);
-  const [newVendor, setNewVendor] = useState({ name: "", service: "" });
-  const [messageRecipient, setMessageRecipient] = useState("Vendor");
-  const [messageDraft, setMessageDraft] = useState("");
-  const [messageStatus, setMessageStatus] = useState("");
-  const [messageLog, setMessageLog] = useState([
+  const [requests, setRequests] = useState([
     {
-      recipient: "Skyline Electrical",
-      body: "Shared lobby lighting schematics and confirmed ETA for 2 PM.",
-      timestamp: "12 minutes ago",
+      id: "req-1",
+      title: "Leaking faucet in Unit 203",
+      description: "Resident reported a persistent leak under the kitchen sink.",
+      status: "in-progress",
+      reportedAt: "Reported 2 days ago",
+      property: "Unit 203",
     },
     {
-      recipient: "Evergreen HVAC",
-      body: "Sent diagnostic photos for Townhome 104 and requested follow-up.",
-      timestamp: "34 minutes ago",
+      id: "req-2",
+      title: "HVAC not cooling — Townhome 104",
+      description: "Initial triage completed, tech en route.",
+      status: "resolved",
+      reportedAt: "Technician scheduled today",
+      property: "Townhome 104",
     },
     {
-      recipient: "Unit 203 tenants",
-      body: "Let residents know the faucet repair is underway and water will be restored shortly.",
-      timestamp: "1 hour ago",
+      id: "req-3",
+      title: "Lobby lighting retrofit",
+      description: "Awaiting confirmation for LED upgrade timeline.",
+      status: "scheduled",
+      reportedAt: "Awaiting vendor confirmation",
+      property: "Maple Grove Apartments",
     },
   ]);
+  const [requestForm, setRequestForm] = useState({
+    title: "",
+    description: "",
+    property: propertyRoster[0],
+  });
+  const [vendorMessage, setVendorMessage] = useState({
+    property: propertyRoster[0],
+    vendors: new Set([vendorDirectory[0].id]),
+    subject: "",
+    body: "",
+  });
+  const [activityLog, setActivityLog] = useState([]);
+  const [confirmation, setConfirmation] = useState("");
+  const [vendorConfirmation, setVendorConfirmation] = useState("");
 
-  useEffect(() => {
-    let active = true;
+  const activeRequests = useMemo(
+    () =>
+      [...requests]
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((request) => ({
+          ...request,
+          statusMeta: getStatusMeta(request.status),
+        })),
+    [requests],
+  );
 
-    (async () => {
-      try {
-        const snapshot = await fetchPortfolioSnapshot();
-        if (!active) return;
-        setDashboardMetrics(snapshot.metrics ?? createEmptyMetrics());
-        if (snapshot.errorSummary) {
-          setMetricsError(snapshot.errorSummary);
-        } else if (snapshot.errors?.length) {
-          setMetricsError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
-        } else {
-          setMetricsError("");
-        }
-      } catch (err) {
-        if (!active) return;
-        setDashboardMetrics((current) => current ?? createEmptyMetrics());
-        setMetricsError(err?.message || "Unable to load dashboard metrics.");
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!messageStatus) return;
-    const timeout = setTimeout(() => setMessageStatus(""), 4000);
-    return () => clearTimeout(timeout);
-  }, [messageStatus]);
-
-  const handleVendorFieldChange = (field, value) => {
-    setNewVendor((prev) => ({ ...prev, [field]: value }));
+  const handleRequestChange = (field, value) => {
+    setRequestForm((prev) => ({ ...prev, [field]: value }));
+    setConfirmation("");
   };
 
-  const handleAddVendor = (event) => {
+  const handleSubmitRequest = (event) => {
     event.preventDefault();
-    if (!newVendor.name.trim() || !newVendor.service.trim()) {
+    if (!requestForm.title.trim() || !requestForm.description.trim()) {
+      setConfirmation("Add a title and description to submit a request.");
       return;
     }
 
-    setVendors((current) => [
-      { name: newVendor.name.trim(), service: newVendor.service.trim() },
-      ...current,
+    const timestamp = new Date();
+    const newRequest = {
+      id: `req-${timestamp.getTime()}`,
+      title: requestForm.title.trim(),
+      description: requestForm.description.trim(),
+      status: "new",
+      reportedAt: `Added ${timestamp.toLocaleDateString()} at ${timestamp.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`,
+      property: requestForm.property,
+    };
+
+    setRequests((prev) => [newRequest, ...prev]);
+    setActivityLog((prev) => [
+      {
+        id: `log-${timestamp.getTime()}`,
+        message: `Request “${newRequest.title}” created for ${newRequest.property}.`,
+        createdAt: timestamp.toISOString(),
+      },
+      ...prev,
     ]);
-    setNewVendor({ name: "", service: "" });
+    setConfirmation("Request submitted and added to the active queue.");
+    setRequestForm({ title: "", description: "", property: propertyRoster[0] });
   };
 
-  const handleRemoveVendor = (indexToRemove) => {
-    setVendors((current) => current.filter((_, index) => index !== indexToRemove));
+  const handleStatusChange = (requestId, status) => {
+    const requestToUpdate = requests.find((request) => request.id === requestId);
+
+    setRequests((prev) =>
+      prev.map((request) =>
+        request.id === requestId
+          ? {
+              ...request,
+              status,
+            }
+          : request,
+      ),
+    );
+
+    if (requestToUpdate) {
+      setActivityLog((prev) => [
+        {
+          id: `log-${requestId}-${status}-${Date.now()}`,
+          message: `Status for “${requestToUpdate.title}” updated to ${getStatusMeta(status).label}.`,
+          createdAt: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
+    }
   };
 
-  const handleSendMaintenanceMessage = (event) => {
+  const handleVendorSelection = (vendorId) => {
+    setVendorMessage((prev) => {
+      const nextVendors = new Set(prev.vendors);
+      if (nextVendors.has(vendorId)) {
+        nextVendors.delete(vendorId);
+      } else {
+        nextVendors.add(vendorId);
+      }
+      return { ...prev, vendors: nextVendors };
+    });
+    setVendorConfirmation("");
+  };
+
+  const handleVendorMessageChange = (field, value) => {
+    setVendorMessage((prev) => ({ ...prev, [field]: value }));
+    setVendorConfirmation("");
+  };
+
+  const handleSendVendorLog = (event) => {
     event.preventDefault();
-    const content = messageDraft.trim();
-    if (!content) {
-      setMessageStatus("Add a quick note before sending your update.");
+    if (vendorMessage.vendors.size === 0) {
+      setVendorConfirmation("Select at least one vendor to notify.");
+      return;
+    }
+    if (!vendorMessage.body.trim()) {
+      setVendorConfirmation("Include a brief update before sending.");
       return;
     }
 
-    const recipientLabel = messageRecipient === "Vendor" ? "Preferred vendor network" : messageRecipient;
-    const entry = {
-      recipient: recipientLabel,
-      body: content,
-      timestamp: "Just now",
-    };
+    const timestamp = new Date();
+    const recipients = vendorDirectory
+      .filter((vendor) => vendorMessage.vendors.has(vendor.id))
+      .map((vendor) => vendor.name)
+      .join(", ");
 
-    setMessageLog((current) => [entry, ...current]);
-    setMessageDraft("");
-    setMessageStatus("Update logged and shared with your dashboard messaging feed.");
+    setActivityLog((prev) => [
+      {
+        id: `log-vendor-${timestamp.getTime()}`,
+        message: `Vendor log sent to ${recipients} for ${vendorMessage.property}.`,
+        createdAt: timestamp.toISOString(),
+      },
+      ...prev,
+    ]);
+
+    setVendorConfirmation("Vendor log recorded and message queued for delivery.");
+    setVendorMessage({
+      property: vendorMessage.property,
+      vendors: new Set(vendorMessage.vendors),
+      subject: "",
+      body: "",
+    });
   };
 
-  const vendorRoster = useMemo(() => vendors, [vendors]);
+  const recentActivity = activityLog.slice(0, 6);
 
   return (
     <section className="space-y-8">
@@ -129,143 +232,82 @@ export default function Maintenance() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="space-y-6">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
-            <h2 className="text-lg font-semibold text-white">Active requests</h2>
-            <p className="mt-1 text-sm text-slate-200">High-priority items surfaced automatically by HiveBot.</p>
-            <ul className="mt-6 space-y-4 text-sm text-slate-200">
-              <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div>
-                  <p className="font-semibold text-white">Leaking faucet in Unit 203</p>
-                  <p className="text-xs text-slate-400">Reported 2 days ago</p>
-                </div>
-                <span className="rounded-full bg-[#FFB400]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
-                  In progress
-                </span>
-              </li>
-              <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div>
-                  <p className="font-semibold text-white">HVAC not cooling — Townhome 104</p>
-                  <p className="text-xs text-slate-400">Technician scheduled today</p>
-                </div>
-                <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200">
-                  Resolved
-                </span>
-              </li>
-              <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div>
-                  <p className="font-semibold text-white">Lobby lighting retrofit</p>
-                  <p className="text-xs text-slate-400">Awaiting vendor confirmation</p>
-                </div>
-                <span className="rounded-full bg-sky-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">
-                  Scheduled
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
-            <h2 className="text-lg font-semibold text-white">Recent activity</h2>
-            <p className="mt-1 text-sm text-slate-200">Automated updates streaming in from resident requests and vendor outreach.</p>
-            <ul className="mt-6 space-y-4 text-sm text-slate-200">
-              <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="pr-4">
-                  <p className="font-semibold text-white">HiveBot nudged Skyline Electrical</p>
-                  <p className="text-xs text-slate-400">Follow-up sent 12 minutes ago</p>
-                </div>
-                <span className="rounded-full bg-slate-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
-                  Outreach
-                </span>
-              </li>
-              <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="pr-4">
-                  <p className="font-semibold text-white">Unit 203 leak photos auto-uploaded</p>
-                  <p className="text-xs text-slate-400">Maintenance request updated 34 minutes ago</p>
-                </div>
-                <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200">
-                  Synced
-                </span>
-              </li>
-              <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="pr-4">
-                  <p className="font-semibold text-white">Vendor ETA auto-confirmed</p>
-                  <p className="text-xs text-slate-400">Evergreen HVAC accepted updated schedule</p>
-                </div>
-                <span className="rounded-full bg-sky-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">
-                  Update
-                </span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
-            <h2 className="text-lg font-semibold text-white">Vendor log</h2>
-            <p className="mt-1 text-sm text-slate-200">Keep an auditable roster of partners and prune it as your network evolves.</p>
-            <form onSubmit={handleAddVendor} className="mt-6 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input
-                  type="text"
-                  value={newVendor.name}
-                  onChange={(event) => handleVendorFieldChange("name", event.target.value)}
-                  placeholder="Vendor name"
-                  className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
-                />
-                <input
-                  type="text"
-                  value={newVendor.service}
-                  onChange={(event) => handleVendorFieldChange("service", event.target.value)}
-                  placeholder="Specialty"
-                  className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
-              >
-                Add vendor
-              </button>
-            </form>
-            <ul className="mt-6 space-y-3 text-sm text-slate-200">
-              {vendorRoster.map((vendor, index) => (
-                <li
-                  key={`${vendor.name}-${index}`}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4"
-                >
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+          <h2 className="text-lg font-semibold text-white">Active requests</h2>
+          <p className="mt-1 text-sm text-slate-200">High-priority items surfaced automatically by HiveBot.</p>
+          <ul className="mt-6 space-y-4 text-sm text-slate-200">
+            {activeRequests.map((request) => (
+              <li key={request.id} className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-semibold text-white">{vendor.name}</p>
-                    <p className="text-xs text-slate-400">{vendor.service}</p>
+                    <p className="font-semibold text-white">{request.title}</p>
+                    <p className="text-xs text-slate-400">{request.reportedAt}</p>
+                    <p className="mt-2 text-xs text-slate-300">
+                      <span className="font-semibold text-white">Property:</span> {request.property}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-300">{request.description}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveVendor(index)}
-                    className="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:border-red-400 hover:text-red-200"
+                  <span
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${request.statusMeta.badgeClass}`}
                   >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+                    {request.statusMeta.label}
+                  </span>
+                </div>
+                <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Update progress
+                  <select
+                    value={request.status}
+                    onChange={(event) => handleStatusChange(request.id, event.target.value)}
+                    className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                  >
+                    {STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value} className="bg-slate-900 text-slate-100">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="space-y-6">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">Log a request</h2>
             <p className="mt-1 text-sm text-slate-200">Collect all the context your vendors need to respond quickly.</p>
-            <form className="mt-6 space-y-4">
+            <form className="mt-6 space-y-4" onSubmit={handleSubmitRequest}>
+              <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Property
+                <select
+                  value={requestForm.property}
+                  onChange={(event) => handleRequestChange("property", event.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                >
+                  {propertyRoster.map((property) => (
+                    <option key={property} value={property} className="bg-slate-900 text-slate-100">
+                      {property}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <input
                 type="text"
+                value={requestForm.title}
+                onChange={(event) => handleRequestChange("title", event.target.value)}
                 placeholder="Task title"
                 className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
               />
               <textarea
+                value={requestForm.description}
+                onChange={(event) => handleRequestChange("description", event.target.value)}
                 placeholder="Describe the issue…"
                 rows={4}
                 className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
               />
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
                 <button
-                  type="button"
+                  type="submit"
                   className="rounded-2xl bg-[#FFB400] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
                 >
                   Submit request
@@ -275,6 +317,7 @@ export default function Maintenance() {
                   Ask HiveBot to notify the tenant
                 </Link>
               </div>
+              {confirmation && <p className="text-xs text-emerald-300">{confirmation}</p>}
             </form>
           </div>
 
@@ -359,6 +402,100 @@ export default function Maintenance() {
             >
               Manage reminders
             </Link>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+            <h2 className="text-lg font-semibold text-white">Create vendor log</h2>
+            <p className="mt-1 text-sm text-slate-200">
+              Broadcast updates and coordinate the right vendors for a property-level issue.
+            </p>
+            <form className="mt-6 space-y-4" onSubmit={handleSendVendorLog}>
+              <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Property
+                <select
+                  value={vendorMessage.property}
+                  onChange={(event) => handleVendorMessageChange("property", event.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                >
+                  {propertyRoster.map((property) => (
+                    <option key={property} value={property} className="bg-slate-900 text-slate-100">
+                      {property}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <fieldset className="space-y-2 text-xs text-slate-200">
+                <legend className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Vendors</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {vendorDirectory.map((vendor) => (
+                    <label
+                      key={vendor.id}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white shadow-sm hover:border-[#FFB400]/60"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={vendorMessage.vendors.has(vendor.id)}
+                        onChange={() => handleVendorSelection(vendor.id)}
+                        className="h-4 w-4 rounded border-white/20 bg-slate-900 text-[#FFB400] focus:ring-[#FFB400]"
+                      />
+                      {vendor.name}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <input
+                type="text"
+                value={vendorMessage.subject}
+                onChange={(event) => handleVendorMessageChange("subject", event.target.value)}
+                placeholder="Subject (optional)"
+                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+              />
+
+              <textarea
+                value={vendorMessage.body}
+                onChange={(event) => handleVendorMessageChange("body", event.target.value)}
+                placeholder="Share progress, attachments, or scheduling details…"
+                rows={4}
+                className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+              />
+
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-[#FFB400] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+                >
+                  Send update
+                </button>
+                <span>or</span>
+                <Link href="/vendors" className="font-semibold text-[#FFB400] hover:text-[#f39c00]">
+                  Manage vendor profiles
+                </Link>
+              </div>
+              {vendorConfirmation && <p className="text-xs text-emerald-300">{vendorConfirmation}</p>}
+            </form>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+            <h2 className="text-lg font-semibold text-white">Recent activity</h2>
+            <p className="mt-1 text-sm text-slate-200">Track automatic updates from requests and vendor outreach.</p>
+            <ul className="mt-6 space-y-3 text-xs text-slate-200">
+              {recentActivity.length === 0 ? (
+                <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-400">
+                  Nothing logged yet — actions you take will show here.
+                </li>
+              ) : (
+                recentActivity.map((entry) => (
+                  <li key={entry.id} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    <p className="font-semibold text-white">{entry.message}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      {new Date(entry.createdAt).toLocaleString()}
+                    </p>
+                  </li>
+                ))
+              )}
+            </ul>
           </div>
         </section>
       </div>

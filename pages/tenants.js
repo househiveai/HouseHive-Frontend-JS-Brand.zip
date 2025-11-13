@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import RequireAuth from "../components/RequireAuth";
 import {
+  apiAddProperty,
   apiAddTenant,
   apiMe,
 } from "../lib/api";
@@ -27,7 +28,11 @@ function TenantsContent() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [propertyId, setPropertyId] = useState("");
-  const [metrics, setMetrics] = useState(() => createEmptyMetrics());
+  const [propertySearch, setPropertySearch] = useState("");
+  const [showPropertyForm, setShowPropertyForm] = useState(false);
+  const [newPropertyName, setNewPropertyName] = useState("");
+  const [newPropertyAddress, setNewPropertyAddress] = useState("");
+  const [savingProperty, setSavingProperty] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,10 +63,55 @@ function TenantsContent() {
 
   const propertyLookup = useMemo(() => {
     return properties.reduce((acc, property) => {
-      acc[property.id] = property.name;
+      if (!property) return acc;
+      acc[property.id] = property?.name || `Property #${property?.id}`;
       return acc;
     }, {});
   }, [properties]);
+
+  const filteredProperties = useMemo(() => {
+    const query = propertySearch.trim().toLowerCase();
+    if (!query) return properties;
+    return properties.filter((property) => {
+      const nameText = property?.name?.toLowerCase() ?? "";
+      const addressText = property?.address?.toLowerCase() ?? "";
+      return nameText.includes(query) || addressText.includes(query);
+    });
+  }, [properties, propertySearch]);
+
+  const resetPropertyForm = () => {
+    setShowPropertyForm(false);
+    setNewPropertyName("");
+    setNewPropertyAddress("");
+    setSavingProperty(false);
+  };
+
+  async function handleAddProperty(event) {
+    event?.preventDefault?.();
+    setError("");
+    const trimmedName = newPropertyName.trim();
+    if (!trimmedName) {
+      setError("Please enter a property name before saving.");
+      return;
+    }
+
+    setSavingProperty(true);
+    try {
+      const payload = {
+        name: trimmedName,
+        address: newPropertyAddress || null,
+      };
+      const created = await apiAddProperty(payload);
+      setProperties((prev) => [created, ...prev]);
+      setPropertySearch("");
+      setPropertyId(String(created.id));
+      resetPropertyForm();
+    } catch (err) {
+      setError(err?.message || "Unable to add property. Please try again.");
+    } finally {
+      setSavingProperty(false);
+    }
+  }
 
   async function handleAddTenant(event) {
     event.preventDefault();
@@ -83,6 +133,7 @@ function TenantsContent() {
       setEmail("");
       setPhone("");
       setPropertyId("");
+      setPropertySearch("");
     } catch (err) {
       setError(err?.message || "Unable to add tenant. Please try again.");
     }
@@ -200,22 +251,95 @@ function TenantsContent() {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-200">
-                Assign to property
-                <select
-                  value={propertyId}
-                  onChange={(event) => setPropertyId(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
-                  required
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-slate-200">
+                  Assign to property
+                  <input
+                    type="text"
+                    value={propertySearch}
+                    onChange={(event) => setPropertySearch(event.target.value)}
+                    placeholder="Search by name or address"
+                    className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                  />
+                </label>
+
+                <label className="block text-sm font-medium text-slate-200">
+                  <span className="sr-only">Select property</span>
+                  <select
+                    value={propertyId}
+                    onChange={(event) => setPropertyId(event.target.value)}
+                    className="mt-1 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                    required
+                  >
+                    <option value="">Select a property...</option>
+                    {filteredProperties.map((property) => (
+                      <option key={property.id} value={String(property.id)} className="text-slate-900">
+                        {property.name}
+                        {property.address ? ` • ${property.address}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {filteredProperties.length === 0 && (
+                  <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-3 text-xs text-slate-200">
+                    No properties match your search. Add a new property below to continue.
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowPropertyForm((prev) => !prev)}
+                  className="text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:text-[#f39c00]"
                 >
-                  <option value="">Select a property...</option>
-                  {properties.map((property) => (
-                    <option key={property.id} value={property.id} className="text-slate-900">
-                      {property.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  {showPropertyForm ? "Cancel adding property" : "Can't find it? Add a property"}
+                </button>
+
+                {showPropertyForm && (
+                  <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <label className="block text-xs font-medium text-slate-200">
+                      Property name
+                      <input
+                        type="text"
+                        value={newPropertyName}
+                        onChange={(event) => setNewPropertyName(event.target.value)}
+                        className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                        placeholder="e.g. Maple Grove Unit 2"
+                        required
+                      />
+                    </label>
+
+                    <label className="block text-xs font-medium text-slate-200">
+                      Address (optional)
+                      <input
+                        type="text"
+                        value={newPropertyAddress}
+                        onChange={(event) => setNewPropertyAddress(event.target.value)}
+                        className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                        placeholder="123 Main Street"
+                      />
+                    </label>
+
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={resetPropertyForm}
+                        className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-[#FFB400] hover:text-[#FFB400]"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={savingProperty}
+                        onClick={handleAddProperty}
+                        className="rounded-xl bg-[#FFB400] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00] disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        {savingProperty ? "Saving..." : "Save property"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="flex items-center justify-end gap-3">
                 <button

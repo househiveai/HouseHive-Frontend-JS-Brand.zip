@@ -37,6 +37,12 @@ export default function Home() {
             >
               Sign in
             </Link>
+            <Link
+              href="/app"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:border-[#FFB400] hover:text-[#FFB400]"
+            >
+              Mobile apps
+            </Link>
           </div>
 
           <dl className="grid grid-cols-2 gap-5 text-left sm:grid-cols-4">

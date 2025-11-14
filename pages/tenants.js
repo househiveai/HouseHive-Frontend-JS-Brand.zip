@@ -23,6 +23,7 @@ function TenantsContent() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [metrics, setMetrics] = useState(createEmptyMetrics());
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

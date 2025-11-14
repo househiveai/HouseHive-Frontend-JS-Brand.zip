@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
+import { getAccessToken } from "../lib/auth";
+
+const isClient = typeof window !== "undefined";
 
 
 const STATUS_OPTIONS = [
@@ -223,6 +228,12 @@ export default function Maintenance() {
         </p>
       </header>
 
+      <DashboardBridge metrics={safeMetrics} dashboardMetrics={safeMetrics} focus="Maintenance" />
+
+      {metricsError && (
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{metricsError}</div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
           <h2 className="text-lg font-semibold text-white">Active requests</h2>
@@ -311,6 +322,76 @@ export default function Maintenance() {
               </div>
               {confirmation && <p className="text-xs text-emerald-300">{confirmation}</p>}
             </form>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
+            <h2 className="text-lg font-semibold text-white">Maintenance messages</h2>
+            <p className="mt-1 text-sm text-slate-200">Coordinate outreach without leaving the upkeep workspace.</p>
+
+            {messageStatus && (
+              <div
+                className={`mt-4 rounded-2xl border px-4 py-3 text-xs font-semibold uppercase tracking-[0.25em] ${
+                  messageStatus.startsWith("Add")
+                    ? "border-red-500/40 bg-red-500/10 text-red-200"
+                    : "border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
+                }`}
+              >
+                {messageStatus}
+              </div>
+            )}
+
+            <form onSubmit={handleSendMaintenanceMessage} className="mt-6 space-y-4 text-sm">
+              <label className="block text-xs uppercase tracking-[0.3em] text-slate-400">
+                Recipient
+                <select
+                  value={messageRecipient}
+                  onChange={(event) => setMessageRecipient(event.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                >
+                  <option value="Vendor">Vendor</option>
+                  <option value="Tenant">Tenant</option>
+                  <option value="Internal team">Internal team</option>
+                </select>
+              </label>
+
+              <label className="block text-xs uppercase tracking-[0.3em] text-slate-400">
+                Message
+                <textarea
+                  rows={3}
+                  value={messageDraft}
+                  onChange={(event) => setMessageDraft(event.target.value)}
+                  placeholder="Share scheduling updates, access notes, or next steps."
+                  className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
+                />
+              </label>
+
+              <button
+                type="submit"
+                className="w-full rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
+              >
+                Send maintenance update
+              </button>
+            </form>
+
+            <div className="mt-6 space-y-3">
+              <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">Recent outreach</h3>
+              <ul className="space-y-3 text-sm text-slate-200">
+                {messageLog.map((entry, index) => (
+                  <li
+                    key={`${entry.recipient}-${index}`}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{entry.recipient}</p>
+                        <p className="mt-1 text-sm text-white">{entry.body}</p>
+                      </div>
+                      <span className="text-xs text-slate-400">{entry.timestamp}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-[#FFB400]/10 p-6 text-sm text-slate-900 shadow-xl sm:p-8">

@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import RequireAuth from "../components/RequireAuth";
 import {
   apiAddProperty,
   apiAddTenant,
-  apiGetProperties,
-  apiGetTenants,
   apiMe,
 } from "../lib/api";
+import DashboardBridge from "../components/DashboardBridge";
+import { createEmptyMetrics, fetchPortfolioSnapshot } from "../lib/portfolio";
 
 export default function TenantsPage() {
   return (
@@ -34,39 +34,32 @@ function TenantsContent() {
   const [newPropertyAddress, setNewPropertyAddress] = useState("");
   const [savingProperty, setSavingProperty] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
-    async function load() {
-      setLoading(true);
-      setError("");
-
-      try {
-        const [me, propertyList, tenantList] = await Promise.all([
-          apiMe(),
-          apiGetProperties(),
-          apiGetTenants(),
-        ]);
-
-        if (!isMounted) return;
-
-        setUser(me);
-        setProperties(Array.isArray(propertyList) ? propertyList : propertyList?.results ?? []);
-        setTenants(Array.isArray(tenantList) ? tenantList : tenantList?.results ?? []);
-      } catch (err) {
-        if (!isMounted) return;
-        setError(err?.message || "Failed to load tenants.");
-      } finally {
-        if (isMounted) setLoading(false);
+    try {
+      const [me, snapshot] = await Promise.all([apiMe(), fetchPortfolioSnapshot()]);
+      setUser(me);
+      setProperties(snapshot.properties);
+      setTenants(snapshot.tenants);
+      setMetrics(snapshot.metrics);
+      if (snapshot.errorSummary) {
+        setError(snapshot.errorSummary);
+      } else if (snapshot.errors?.length) {
+        setError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
       }
+    } catch (err) {
+      setError(err?.message || "Failed to load tenants.");
+      setMetrics(createEmptyMetrics());
+    } finally {
+      setLoading(false);
     }
-
-    load();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const propertyLookup = useMemo(() => {
     return properties.reduce((acc, property) => {
@@ -132,8 +125,8 @@ function TenantsContent() {
         property_id: Number(propertyId),
       };
 
-      const newTenant = await apiAddTenant(payload);
-      setTenants((prev) => [newTenant, ...prev]);
+      await apiAddTenant(payload);
+      await load();
 
       setShowForm(false);
       setName("");
@@ -175,6 +168,8 @@ function TenantsContent() {
           + Add tenant
         </button>
       </header>
+
+      <DashboardBridge metrics={metrics} focus="Tenants" />
 
       {error && (
         <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div>

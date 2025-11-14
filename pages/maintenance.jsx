@@ -10,15 +10,18 @@ export default function Maintenance() {
   const [metrics, setMetrics] = useState(() => createEmptyMetrics());
   const safeMetrics = metrics || createEmptyMetrics();
   const [metricsError, setMetricsError] = useState("");
+
   const [vendors, setVendors] = useState([
     { name: "BrightFix Plumbing", service: "Plumbing" },
     { name: "Evergreen HVAC", service: "Climate Control" },
     { name: "Skyline Electrical", service: "Electrical" },
   ]);
+
   const [newVendor, setNewVendor] = useState({ name: "", service: "" });
   const [messageRecipient, setMessageRecipient] = useState("Vendor");
   const [messageDraft, setMessageDraft] = useState("");
   const [messageStatus, setMessageStatus] = useState("");
+
   const [messageLog, setMessageLog] = useState([
     {
       recipient: "Skyline Electrical",
@@ -37,26 +40,34 @@ export default function Maintenance() {
     },
   ]);
 
+  // -----------------------------
+  // Load dashboard metrics safely
+  // -----------------------------
   useEffect(() => {
     let active = true;
 
     (async () => {
       const token = getAccessToken();
       if (!token) {
-        if (!active) return;
-        setMetrics(createEmptyMetrics());
-        setMetricsError("");
+        if (active) {
+          setMetrics(createEmptyMetrics());
+          setMetricsError("");
+        }
         return;
       }
 
       try {
         const snapshot = await fetchPortfolioSnapshot();
         if (!active) return;
+
         setMetrics(snapshot.metrics ?? createEmptyMetrics());
+
         if (snapshot.errorSummary) {
           setMetricsError(snapshot.errorSummary);
         } else if (snapshot.errors?.length) {
-          setMetricsError(`Some dashboard data failed to load: ${snapshot.errors.join(", ")}`);
+          setMetricsError(
+            `Some dashboard data failed to load: ${snapshot.errors.join(", ")}`
+          );
         } else {
           setMetricsError("");
         }
@@ -72,26 +83,31 @@ export default function Maintenance() {
     };
   }, []);
 
+  // -----------------------------
+  // Auto clear message banner
+  // -----------------------------
   useEffect(() => {
     if (!messageStatus) return;
     const timeout = setTimeout(() => setMessageStatus(""), 4000);
     return () => clearTimeout(timeout);
   }, [messageStatus]);
 
+  // -----------------------------
+  // Vendor form updates
+  // -----------------------------
   const handleVendorFieldChange = (field, value) => {
     setNewVendor((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAddVendor = (event) => {
     event.preventDefault();
-    if (!newVendor.name.trim() || !newVendor.service.trim()) {
-      return;
-    }
+    if (!newVendor.name.trim() || !newVendor.service.trim()) return;
 
     setVendors((current) => [
       { name: newVendor.name.trim(), service: newVendor.service.trim() },
       ...current,
     ]);
+
     setNewVendor({ name: "", service: "" });
   };
 
@@ -99,69 +115,103 @@ export default function Maintenance() {
     setVendors((current) => current.filter((_, index) => index !== indexToRemove));
   };
 
+  // -----------------------------
+  // Messaging
+  // -----------------------------
   const handleSendMaintenanceMessage = (event) => {
     event.preventDefault();
+
     const content = messageDraft.trim();
     if (!content) {
       setMessageStatus("Add a quick note before sending your update.");
       return;
     }
 
-    const recipientLabel = messageRecipient === "Vendor" ? "Preferred vendor network" : messageRecipient;
     const entry = {
-      recipient: recipientLabel,
+      recipient:
+        messageRecipient === "Vendor"
+          ? "Preferred vendor network"
+          : messageRecipient,
       body: content,
       timestamp: "Just now",
     };
 
     setMessageLog((current) => [entry, ...current]);
     setMessageDraft("");
-    setMessageStatus("Update logged and shared with your dashboard messaging feed.");
+
+    setMessageStatus(
+      "Update logged and shared with your dashboard messaging feed."
+    );
   };
 
   const vendorRoster = useMemo(() => vendors, [vendors]);
 
+  // Prevent SSR crash – client only
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  // -----------------------------
+  // UI — DO NOT CHANGE LAYOUT
+  // -----------------------------
   return (
     <section className="space-y-8">
       <header className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white shadow-xl backdrop-blur-xl sm:p-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">Maintenance HQ</p>
-        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Coordinated upkeep made elegant</h1>
+        <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#FFB400]">
+          Maintenance HQ
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">
+          Coordinated upkeep made elegant
+        </h1>
         <p className="mt-3 max-w-2xl text-sm text-slate-200">
-          Triage requests, assign vendors, and keep residents informed — all within a modern interface that mirrors your new
-          auth experience.
+          Triage requests, assign vendors, and keep residents informed — all within
+          a modern interface that mirrors your new auth experience.
         </p>
       </header>
 
       <DashboardBridge metrics={safeMetrics} dashboardMetrics={safeMetrics} focus="Maintenance" />
 
       {metricsError && (
-        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{metricsError}</div>
+        <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+          {metricsError}
+        </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        {/* LEFT SIDE (unchanged) */}
         <section className="space-y-6">
+          {/* Active Requests */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">Active requests</h2>
-            <p className="mt-1 text-sm text-slate-200">High-priority items surfaced automatically by HiveBot.</p>
+            <p className="mt-1 text-sm text-slate-200">
+              High-priority items surfaced automatically by HiveBot.
+            </p>
+
             <ul className="mt-6 space-y-4 text-sm text-slate-200">
               <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div>
-                  <p className="font-semibold text-white">Leaking faucet in Unit 203</p>
+                  <p className="font-semibold text-white">
+                    Leaking faucet in Unit 203
+                  </p>
                   <p className="text-xs text-slate-400">Reported 2 days ago</p>
                 </div>
                 <span className="rounded-full bg-[#FFB400]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
                   In progress
                 </span>
               </li>
+
               <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div>
-                  <p className="font-semibold text-white">HVAC not cooling — Townhome 104</p>
+                  <p className="font-semibold text-white">
+                    HVAC not cooling — Townhome 104
+                  </p>
                   <p className="text-xs text-slate-400">Technician scheduled today</p>
                 </div>
                 <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200">
                   Resolved
                 </span>
               </li>
+
               <li className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div>
                   <p className="font-semibold text-white">Lobby lighting retrofit</p>
@@ -174,32 +224,48 @@ export default function Maintenance() {
             </ul>
           </div>
 
+          {/* Recent Activity */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">Recent activity</h2>
-            <p className="mt-1 text-sm text-slate-200">Automated updates streaming in from resident requests and vendor outreach.</p>
+            <p className="mt-1 text-sm text-slate-200">
+              Automated updates streaming in from resident requests and vendor outreach.
+            </p>
+
             <ul className="mt-6 space-y-4 text-sm text-slate-200">
               <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="pr-4">
-                  <p className="font-semibold text-white">HiveBot nudged Skyline Electrical</p>
+                  <p className="font-semibold text-white">
+                    HiveBot nudged Skyline Electrical
+                  </p>
                   <p className="text-xs text-slate-400">Follow-up sent 12 minutes ago</p>
                 </div>
                 <span className="rounded-full bg-slate-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400]">
                   Outreach
                 </span>
               </li>
+
               <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="pr-4">
-                  <p className="font-semibold text-white">Unit 203 leak photos auto-uploaded</p>
-                  <p className="text-xs text-slate-400">Maintenance request updated 34 minutes ago</p>
+                  <p className="font-semibold text-white">
+                    Unit 203 leak photos auto-uploaded
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Maintenance request updated 34 minutes ago
+                  </p>
                 </div>
                 <span className="rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200">
                   Synced
                 </span>
               </li>
+
               <li className="flex items-start justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="pr-4">
-                  <p className="font-semibold text-white">Vendor ETA auto-confirmed</p>
-                  <p className="text-xs text-slate-400">Evergreen HVAC accepted updated schedule</p>
+                  <p className="font-semibold text-white">
+                    Vendor ETA auto-confirmed
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Evergreen HVAC accepted updated schedule
+                  </p>
                 </div>
                 <span className="rounded-full bg-sky-400/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-sky-200">
                   Update
@@ -208,26 +274,36 @@ export default function Maintenance() {
             </ul>
           </div>
 
+          {/* Vendor Log */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">Vendor log</h2>
-            <p className="mt-1 text-sm text-slate-200">Keep an auditable roster of partners and prune it as your network evolves.</p>
+            <p className="mt-1 text-sm text-slate-200">
+              Keep an auditable roster of partners and prune it as your network evolves.
+            </p>
+
             <form onSubmit={handleAddVendor} className="mt-6 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <input
                   type="text"
                   value={newVendor.name}
-                  onChange={(event) => handleVendorFieldChange("name", event.target.value)}
+                  onChange={(e) =>
+                    handleVendorFieldChange("name", e.target.value)
+                  }
                   placeholder="Vendor name"
                   className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
                 />
+
                 <input
                   type="text"
                   value={newVendor.service}
-                  onChange={(event) => handleVendorFieldChange("service", event.target.value)}
+                  onChange={(e) =>
+                    handleVendorFieldChange("service", e.target.value)
+                  }
                   placeholder="Specialty"
                   className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
                 />
               </div>
+
               <button
                 type="submit"
                 className="w-full rounded-2xl bg-[#FFB400] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f39c00]"
@@ -235,6 +311,7 @@ export default function Maintenance() {
                 Add vendor
               </button>
             </form>
+
             <ul className="mt-6 space-y-3 text-sm text-slate-200">
               {vendorRoster.map((vendor, index) => (
                 <li
@@ -245,6 +322,7 @@ export default function Maintenance() {
                     <p className="font-semibold text-white">{vendor.name}</p>
                     <p className="text-xs text-slate-400">{vendor.service}</p>
                   </div>
+
                   <button
                     type="button"
                     onClick={() => handleRemoveVendor(index)}
@@ -258,21 +336,28 @@ export default function Maintenance() {
           </div>
         </section>
 
+        {/* Right Column */}
         <section className="space-y-6">
+          {/* Log a Request */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
             <h2 className="text-lg font-semibold text-white">Log a request</h2>
-            <p className="mt-1 text-sm text-slate-200">Collect all the context your vendors need to respond quickly.</p>
+            <p className="mt-1 text-sm text-slate-200">
+              Collect all the context your vendors need to respond quickly.
+            </p>
+
             <form className="mt-6 space-y-4">
               <input
                 type="text"
                 placeholder="Task title"
                 className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
               />
+
               <textarea
                 placeholder="Describe the issue…"
                 rows={4}
                 className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
               />
+
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
                 <button
                   type="button"
@@ -280,17 +365,27 @@ export default function Maintenance() {
                 >
                   Submit request
                 </button>
+
                 <span>or</span>
-                <Link href="/messages" className="font-semibold text-[#FFB400] hover:text-[#f39c00]">
+
+                <Link
+                  href="/messages"
+                  className="font-semibold text-[#FFB400] hover:text-[#f39c00]"
+                >
                   Ask HiveBot to notify the tenant
                 </Link>
               </div>
             </form>
           </div>
 
+          {/* Maintenance Messages */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl sm:p-8">
-            <h2 className="text-lg font-semibold text-white">Maintenance messages</h2>
-            <p className="mt-1 text-sm text-slate-200">Coordinate outreach without leaving the upkeep workspace.</p>
+            <h2 className="text-lg font-semibold text-white">
+              Maintenance messages
+            </h2>
+            <p className="mt-1 text-sm text-slate-200">
+              Coordinate outreach without leaving the upkeep workspace.
+            </p>
 
             {messageStatus && (
               <div
@@ -309,7 +404,7 @@ export default function Maintenance() {
                 Recipient
                 <select
                   value={messageRecipient}
-                  onChange={(event) => setMessageRecipient(event.target.value)}
+                  onChange={(e) => setMessageRecipient(e.target.value)}
                   className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
                 >
                   <option value="Vendor">Vendor</option>
@@ -323,7 +418,7 @@ export default function Maintenance() {
                 <textarea
                   rows={3}
                   value={messageDraft}
-                  onChange={(event) => setMessageDraft(event.target.value)}
+                  onChange={(e) => setMessageDraft(e.target.value)}
                   placeholder="Share scheduling updates, access notes, or next steps."
                   className="mt-2 w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-slate-400 focus:border-[#FFB400] focus:outline-none focus:ring-2 focus:ring-[#FFB400]/60"
                 />
@@ -338,7 +433,10 @@ export default function Maintenance() {
             </form>
 
             <div className="mt-6 space-y-3">
-              <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">Recent outreach</h3>
+              <h3 className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                Recent outreach
+              </h3>
+
               <ul className="space-y-3 text-sm text-slate-200">
                 {messageLog.map((entry, index) => (
                   <li
@@ -347,10 +445,15 @@ export default function Maintenance() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{entry.recipient}</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                          {entry.recipient}
+                        </p>
                         <p className="mt-1 text-sm text-white">{entry.body}</p>
                       </div>
-                      <span className="text-xs text-slate-400">{entry.timestamp}</span>
+
+                      <span className="text-xs text-slate-400">
+                        {entry.timestamp}
+                      </span>
                     </div>
                   </li>
                 ))}
@@ -358,11 +461,16 @@ export default function Maintenance() {
             </div>
           </div>
 
+          {/* Automation Spotlight */}
           <div className="rounded-3xl border border-white/10 bg-[#FFB400]/10 p-6 text-sm text-slate-900 shadow-xl sm:p-8">
-            <h2 className="text-lg font-semibold text-slate-900">Automation spotlight</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Automation spotlight
+            </h2>
             <p className="mt-2 text-sm text-slate-800">
-              Auto-create maintenance reminders after every resolved ticket to ensure follow-up surveys and inspection photos are captured.
+              Auto-create maintenance reminders after every resolved ticket to
+              ensure follow-up surveys and inspection photos are captured.
             </p>
+
             <Link
               href="/reminders"
               className="mt-4 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#FFB400] transition hover:bg-slate-800"

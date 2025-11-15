@@ -109,9 +109,13 @@ export default function LandlordPage() {
         address: propertyForm.address || null,
       };
       const updated = await apiUpdateProperty(propertyForm.id, payload);
+      const normalizedUpdate =
+        updated && typeof updated === "object" && !Array.isArray(updated) ? updated : {};
       setProperties((prev) =>
         prev.map((property) =>
-          property.id === propertyForm.id ? { ...property, ...updated, ...payload } : property,
+          property.id === propertyForm.id
+            ? { ...property, ...normalizedUpdate, ...payload }
+            : property,
         ),
       );
       showNotice("success", "Property details updated.");
@@ -163,9 +167,13 @@ export default function LandlordPage() {
         property_id: tenantForm.propertyId ? Number(tenantForm.propertyId) : null,
       };
       const updated = await apiUpdateTenant(tenantForm.id, payload);
+      const normalizedUpdate =
+        updated && typeof updated === "object" && !Array.isArray(updated) ? updated : {};
       setTenants((prev) =>
         prev.map((tenant) =>
-          tenant.id === tenantForm.id ? { ...tenant, ...updated, ...payload } : tenant,
+          tenant.id === tenantForm.id
+            ? { ...tenant, ...normalizedUpdate, ...payload }
+            : tenant,
         ),
       );
       showNotice("success", "Renter profile updated.");
